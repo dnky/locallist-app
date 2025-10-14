@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  domain    String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz
+  ads       Ad[]
+}
+
+model Ad {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String   @db.Uuid
+  businessName String
+  imageSrc     String
+  logoSrc      String?
+  phone        String?
+  email        String?
+  web          String?
+  grid_w       Int
+  grid_h       Int
+  tags         String?
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+}
