@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import TenantAdGrid from '../components/TenantAdGrid'; // Import the shared component
+import TenantAdGrid from '../components/TenantAdGrid';
+import prisma from '../lib/prisma'; // <-- 1. IMPORT the shared client
 
-// The page component is now just a wrapper for the shared component.
+// The page component itself does not need to change.
 export default function IndexPage(props) {
     if (props.error) {
     return (
@@ -16,7 +16,7 @@ export default function IndexPage(props) {
 
 // The data fetching logic here remains the same, using the host header.
 export async function getServerSideProps(context) {
-  const prisma = new PrismaClient();
+  // const prisma = new PrismaClient(); <-- 2. REMOVE this line
   const host = context.req.headers.host; 
 
   try {
@@ -25,7 +25,6 @@ export async function getServerSideProps(context) {
     });
 
     if (!tenant) {
-      // This should be caught by middleware on localhost, but is a fallback.
       return { notFound: true };
     }
 

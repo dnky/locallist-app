@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import TenantAdGrid from '../components/TenantAdGrid'; // Import the shared component
+import TenantAdGrid from '../components/TenantAdGrid';
+import prisma from '../lib/prisma'; // <-- 1. IMPORT the shared client
 
-// The page component itself is now very simple.
+// The page component does not need to change.
 export default function DomainPage(props) {
   if (props.error) {
     return (
@@ -15,17 +15,16 @@ export default function DomainPage(props) {
 }
 
 export async function getServerSideProps(context) {
-  const prisma = new PrismaClient();
-  // Get the domain from the URL slug, e.g., "spaxton.info"
+  // const prisma = new PrismaClient(); <-- 2. REMOVE this line
   const { domain } = context.params;
 
   try {
     const tenant = await prisma.tenant.findUnique({
-      where: { domain: domain }, // Use the domain from the URL
+      where: { domain: domain },
     });
 
     if (!tenant) {
-      return { notFound: true }; // If domain doesn't exist in DB, show 404
+      return { notFound: true };
     }
 
     const ads = await prisma.ad.findMany({
