@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import TenantAdGrid from '../components/TenantAdGrid'; // Import the shared component
 
-// The page component is now just a wrapper for the shared component.
-export default function IndexPage(props) {
-    if (props.error) {
+// The page component itself is now very simple.
+export default function DomainPage(props) {
+  if (props.error) {
     return (
       <main style={{ textAlign: 'center', paddingTop: '20vh' }}>
         <h1>An Error Occurred</h1>
@@ -14,19 +14,18 @@ export default function IndexPage(props) {
   return <TenantAdGrid {...props} />;
 }
 
-// The data fetching logic here remains the same, using the host header.
 export async function getServerSideProps(context) {
   const prisma = new PrismaClient();
-  const host = context.req.headers.host; 
+  // Get the domain from the URL slug, e.g., "spaxton.info"
+  const { domain } = context.params;
 
   try {
     const tenant = await prisma.tenant.findUnique({
-      where: { domain: host },
+      where: { domain: domain }, // Use the domain from the URL
     });
 
     if (!tenant) {
-      // This should be caught by middleware on localhost, but is a fallback.
-      return { notFound: true };
+      return { notFound: true }; // If domain doesn't exist in DB, show 404
     }
 
     const ads = await prisma.ad.findMany({
@@ -41,7 +40,7 @@ export async function getServerSideProps(context) {
       },
     };
   } catch (error) {
-    console.error("Failed to fetch data for index:", error);
+    console.error("Failed to fetch data for [domain]:", error);
     return {
       props: {
         error: "Could not connect to the database."
