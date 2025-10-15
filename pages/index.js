@@ -3,15 +3,21 @@ import prisma from '../lib/prisma'; // <-- 1. IMPORT the shared client
 
 // The page component itself does not need to change.
 export default function IndexPage(props) {
-    if (props.error) {
-    return (
-      <main style={{ textAlign: 'center', paddingTop: '20vh' }}>
-        <h1>An Error Occurred</h1>
-        <p>{props.error}</p>
-      </main>
-    );
-  }
-  return <TenantAdGrid {...props} />;
+  const { pageClass, ...rest } = props; // Separate pageClass from other props
+
+  return (
+    // Wrap everything in a div with the pageClass
+    <div className={pageClass}>
+      {props.error ? (
+        <main style={{ textAlign: 'center', paddingTop: '20vh' }}>
+          <h1>An Error Occurred</h1>
+          <p>{props.error}</p>
+        </main>
+      ) : (
+        <TenantAdGrid {...rest} /> // Pass the rest of the props to the component
+      )}
+    </div>
+  );
 }
 
 // The data fetching logic here remains the same, using the host header.
