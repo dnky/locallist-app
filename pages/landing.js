@@ -45,7 +45,7 @@ export default function LandingPage({ pageClass }) {
                 <h3>Get Your Business Listed!</h3>
                 <p style={{ textAlign: 'center', marginTop: '-15px', marginBottom: '20px' }}>Fill out the form to get started.</p>
                 {/* Note: This form is styled but will require a backend service to function. */}
-                <form name="contact" method="POST" data-netlify="true">
+                <form name="contact" action="/api/contact" method="POST">
                   <div className="form-group">
                     <label htmlFor="name">Your Name</label>
                     <input type="text" id="name" name="name" required />
