@@ -2,32 +2,32 @@ import { NextResponse } from 'next/server';
 
 export function middleware(req) {
   const url = req.nextUrl.clone();
-  const { pathname } = req.nextUrl;
+  const { pathname } = req.nextUrl; // Get the path of the request (e.g., "/", "/thank-you")
   const hostname = req.headers.get('host');
 
-  // --- THIS IS THE CRUCIAL FIX ---
-  // Prevent middleware from running on static assets, API routes, and internal Next.js files.
+  // This part is still important: ignore requests for static assets
   if (
-    pathname.startsWith('/_next') ||      // Exclude Next.js internal files
-    pathname.startsWith('/api') ||       // Exclude API routes
-    pathname.startsWith('/static') ||    // Exclude static files if you have them
-    /\.(.*)$/.test(pathname)             // Exclude files with extensions (e.g., .ico, .jpg, .png)
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/static') ||
+    /\.(.*)$/.test(pathname)
   ) {
-    // If it's an asset, do nothing and let the request proceed normally.
     return NextResponse.next();
   }
-  // --- END OF FIX ---
 
-
-  // The rest of your logic remains the same.
   const mainDomain = 'locallist.uk';
 
-  // If the request is for the main domain, show the landing page.
-  if (hostname === mainDomain || hostname === 'localhost:3000' || hostname.endsWith('.vercel.app')) {
+  // --- THIS IS THE CRUCIAL LOGIC CHANGE ---
+  // Check BOTH the hostname AND if the user is at the root homepage.
+  if (
+    (hostname === mainDomain || hostname === 'localhost:3000' || hostname.endsWith('.vercel.app')) &&
+    pathname === '/' // Only rewrite if the path is the homepage
+  ) {
     url.pathname = '/landing';
     return NextResponse.rewrite(url);
   }
 
-  // Otherwise, let the request proceed to pages/index.js for tenant logic.
+  // For all other requests (like /thank-you on the main domain, or any request on a tenant domain),
+  // let them proceed to their intended destination.
   return NextResponse.next();
 }
