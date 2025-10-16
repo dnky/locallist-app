@@ -52,7 +52,7 @@ export default function LandingPage({ pageClass }) {
                   </div>
                   <div className="form-group">
                     <label htmlFor="business-name">Business Name</label>
-                    <input type="text" id="business-name" name="business-name" required />
+                    <input type="text" id="business-name" name="businessName" required />
                   </div>
                   <div className="form-group">
                     <label htmlFor="email">Work Email</label>

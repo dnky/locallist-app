@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, 'LocalList': businessName, email, message } = req.body;
+    const { name, businessName, email, message } = req.body;
 
     // Send the email using Resend
     const { data, error } = await resend.emails.send({
