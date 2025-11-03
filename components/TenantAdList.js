@@ -23,7 +23,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                 <div className="slider-text-layer">
                   {/* USE THE NEW DYNAMIC TITLE HERE */}
                   <h1 style={{ margin: 0 }}><span>{tenantTitle}</span></h1>
-                  <h2 style={{ margin: '20px' }}>Local business directory</h2>
+                  <h2 style={{ margin: 0 }}>Local business directory</h2>
                 </div>
               </div>
             </div>
