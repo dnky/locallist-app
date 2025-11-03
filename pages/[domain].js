@@ -1,7 +1,6 @@
-import TenantAdGrid from '../components/TenantAdGrid';
-import prisma from '../lib/prisma'; // <-- 1. IMPORT the shared client
+import TenantAdList from '../components/TenantAdList';
+import prisma from '../lib/prisma';
 
-// The page component does not need to change.
 export default function DomainPage(props) {
   if (props.error) {
     return (
@@ -11,11 +10,10 @@ export default function DomainPage(props) {
       </main>
     );
   }
-  return <TenantAdGrid {...props} />;
+  return <TenantAdList {...props} />;
 }
 
 export async function getServerSideProps(context) {
-  // const prisma = new PrismaClient(); <-- 2. REMOVE this line
   const { domain } = context.params;
 
   try {
@@ -30,12 +28,22 @@ export async function getServerSideProps(context) {
     const ads = await prisma.ad.findMany({
       where: { tenantId: tenant.id },
     });
+    
+    // Extract unique categories from ad tags
+    const allTags = new Set();
+    ads.forEach(ad => {
+      if (ad.tags) {
+        ad.tags.split(',').forEach(tag => allTags.add(tag.trim()));
+      }
+    });
+    const categories = Array.from(allTags).sort();
 
     return {
       props: {
         ads: JSON.parse(JSON.stringify(ads)),
         tenantName: tenant.name,
         tenantDomain: tenant.domain,
+        categories: categories,
       },
     };
   } catch (error) {

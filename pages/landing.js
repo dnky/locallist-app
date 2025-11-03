@@ -9,11 +9,7 @@ export default function LandingPage({ pageClass }) {
         <title>Local List - Digital Ad Directories for Local Businesses</title>
         <meta name="description" content="Give your local ad a 24/7 online home with Local List. We create beautiful, mobile-friendly digital ad directories for local businesses." />
         
-        {/* Google Fonts and Font Awesome links go here */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
+        {/* Google Fonts and Font Awesome links have been moved to _document.js */}
       </Head>
 
       {/* Header */}

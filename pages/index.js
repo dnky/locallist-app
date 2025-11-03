@@ -1,12 +1,10 @@
-import TenantAdGrid from '../components/TenantAdGrid';
-import prisma from '../lib/prisma'; // <-- 1. IMPORT the shared client
+import TenantAdList from '../components/TenantAdList';
+import prisma from '../lib/prisma';
 
-// The page component itself does not need to change.
 export default function IndexPage(props) {
-  const { pageClass, ...rest } = props; // Separate pageClass from other props
+  const { pageClass, ...rest } = props;
 
   return (
-    // Wrap everything in a div with the pageClass
     <div className={pageClass}>
       {props.error ? (
         <main style={{ textAlign: 'center', paddingTop: '20vh' }}>
@@ -14,15 +12,13 @@ export default function IndexPage(props) {
           <p>{props.error}</p>
         </main>
       ) : (
-        <TenantAdGrid {...rest} /> // Pass the rest of the props to the component
+        <TenantAdList {...rest} />
       )}
     </div>
   );
 }
 
-// The data fetching logic here remains the same, using the host header.
 export async function getServerSideProps(context) {
-  // const prisma = new PrismaClient(); <-- 2. REMOVE this line
   const host = context.req.headers.host; 
 
   try {
@@ -38,11 +34,21 @@ export async function getServerSideProps(context) {
       where: { tenantId: tenant.id },
     });
 
+    // Extract unique categories from ad tags
+    const allTags = new Set();
+    ads.forEach(ad => {
+      if (ad.tags) {
+        ad.tags.split(',').forEach(tag => allTags.add(tag.trim()));
+      }
+    });
+    const categories = Array.from(allTags).sort();
+
     return {
       props: {
         ads: JSON.parse(JSON.stringify(ads)),
         tenantName: tenant.name,
         tenantDomain: tenant.domain,
+        categories: categories,
       },
     };
   } catch (error) {
