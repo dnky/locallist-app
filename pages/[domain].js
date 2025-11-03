@@ -37,6 +37,8 @@ export async function getServerSideProps(context) {
     });
     const categories = Array.from(allTags).sort();
 
+    console.log("Tenant fetched from database:", tenant);
+
     return {
       props: {
         ads: JSON.parse(JSON.stringify(ads)),
