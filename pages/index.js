@@ -34,7 +34,6 @@ export async function getServerSideProps(context) {
       where: { tenantId: tenant.id },
     });
 
-    // Extract unique categories from ad tags
     const allTags = new Set();
     ads.forEach(ad => {
       if (ad.tags) {
@@ -47,11 +46,13 @@ export async function getServerSideProps(context) {
       props: {
         ads: JSON.parse(JSON.stringify(ads)),
         tenantName: tenant.name,
+        tenantTitle: tenant.title, // <-- ADD THIS
         tenantDomain: tenant.domain,
         categories: categories,
       },
     };
-  } catch (error) {
+  } catch (error)
+   {
     console.error("Failed to fetch data for index:", error);
     return {
       props: {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Head from 'next/head';
 
-export default function TenantAdList({ tenantName, tenantDomain, ads, categories }) {
+export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads, categories }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isSidebarVisible, setSidebarVisible] = useState(false);
 
@@ -12,8 +12,7 @@ export default function TenantAdList({ tenantName, tenantDomain, ads, categories
   return (
     <>
       <Head>
-        <title>{tenantName}</title>
-        {/* The required fonts are now loaded globally in _document.js */}
+        <title>{tenantTitle}</title> {/* <-- USE NEW TITLE */}
       </Head>
 
       <div id="main-wrapper">
@@ -22,7 +21,8 @@ export default function TenantAdList({ tenantName, tenantDomain, ads, categories
             <div className="slider-content" style={{ height: '250px' }}>
               <div className="slider-static-background">
                 <div className="slider-text-layer">
-                  <h1 style={{ margin: 0 }}><span>{tenantName}</span></h1>
+                  {/* USE THE NEW DYNAMIC TITLE HERE */}
+                  <h1 style={{ margin: 0 }}><span>{tenantTitle}</span></h1>
                   <h2 style={{ margin: '20px' }}>Local business directory</h2>
                 </div>
               </div>

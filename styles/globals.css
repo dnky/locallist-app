@@ -301,7 +301,7 @@ All styles here are scoped to the `.tenant-page-style` class.
 .tenant-page-style .slider-content h1 {
   text-transform: uppercase;
   color: #fff;
-  font-size: 76px;
+  font-size: 68px;
   font-family: 'Raleway', sans-serif;
   font-weight: 800;
 }
@@ -311,7 +311,7 @@ All styles here are scoped to the `.tenant-page-style` class.
 .tenant-page-style .slider-content h2 {
   color: #fff;
   text-transform: uppercase;
-  font-size: 46px;
+  font-size: 40px;
 }
 @media (max-width: 768px) {
   .tenant-page-style .slider-content {

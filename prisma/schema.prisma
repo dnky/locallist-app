@@ -10,6 +10,7 @@ datasource db {
 model Tenant {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
+  title     String?   // <-- ADD THIS LINE
   domain    String   @unique
   createdAt DateTime @default(now()) @db.Timestamptz
   ads       Ad[]
