@@ -18,7 +18,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       <div id="main-wrapper">
         <header id="header">
           <div className="header-search slider-home">
-            <div className="slider-content" style={{ height: '250px' }}>
+            <div className="slider-content" style={{ height: '200px' }}>
               <div className="slider-static-background">
                 <div className="slider-text-layer">
                   {/* USE THE NEW DYNAMIC TITLE HERE */}
