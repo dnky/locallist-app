@@ -47,8 +47,7 @@ export async function getServerSideProps(context) {
         ads: JSON.parse(JSON.stringify(ads)),
         tenantName: tenant.name,
         tenantTitle: tenant.title, // <-- ADD THIS
-        tenantDomain: tenant.domain,
-        categories: categories,
+        tenantDomain: tenant.domain
       },
     };
   } catch (error)

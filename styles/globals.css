@@ -53,8 +53,8 @@ All styles here are scoped to the `.landing-page-style` class.
     padding: 0 20px;
 }
 
-.landing-page-style h1, 
-.landing-page-style h2, 
+.landing-page-style h1,
+.landing-page-style h2,
 .landing-page-style h3 {
     color: var(--primary-color);
     line-height: 1.2;
@@ -146,11 +146,11 @@ All styles here are scoped to the `.tenant-page-style` class.
 ================================================================
 */
 
-/* --- NEW Tenant Page Color Theme & Font --- */
+/* --- Tenant Page Color Theme & Font --- */
 .tenant-page-style {
-  font-family: 'Poppins', sans-serif; /* New font */
+  font-family: 'Poppins', sans-serif;
   color: #333;
-  background-color: #f7f7f7; /* Lighter gray background */
+  background-color: #f7f7f7;
 
   /* Yelp-inspired colors */
   --tenant-primary-color: #d32323; /* Yelp Red */
@@ -159,7 +159,17 @@ All styles here are scoped to the `.tenant-page-style` class.
   --tenant-light-gray: #f7f7f7;
 }
 
-/* --- NEW Header Styles --- */
+.tenant-page-style .container {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) { .tenant-page-style .container { width: 750px; } }
+@media (min-width: 992px) { .tenant-page-style .container { width: 970px; } }
+@media (min-width: 1200px) { .tenant-page-style .container { width: 1170px; } }
+
+/* --- Base Header Styles (Desktop First) --- */
 .tenant-page-style .tenant-header {
   background-color: #fff;
   padding: 1rem 0;
@@ -184,10 +194,21 @@ All styles here are scoped to the `.tenant-page-style` class.
   white-space: nowrap;
 }
 
-.tenant-page-style .search-bar {
-   display: flex;
+.tenant-page-style .search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
   max-width: 600px;
+}
+
+.tenant-page-style .btn-map-mobile {
+  display: none; /* Hide on desktop by default */
+}
+
+.tenant-page-style .search-bar {
+  display: flex;
+  width: 100%;
   border-radius: 4px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.2s ease-in-out;
@@ -202,7 +223,7 @@ All styles here are scoped to the `.tenant-page-style` class.
   padding: 0.75rem 1rem;
   font-size: 1rem;
   border: 1px solid var(--tenant-border-color);
-  border-right: none; /* The container's border will handle the right edge visually */
+  border-right: none;
   border-radius: 4px 0 0 4px;
   outline: none;
   transition: border-color 0.2s;
@@ -222,406 +243,187 @@ All styles here are scoped to the `.tenant-page-style` class.
   font-size: 1rem;
 }
 
-/* --- ADJUSTED Content Area Styles --- */
-.tenant-page-style #page-content {
-  position: relative;
-  padding: 2rem 0; /* Changed from 30px 0 50px 0 */
+/* --- Main Content Area --- */
+.tenant-page-style #page-content-full-width {
+  /* This element no longer needs specific styles */
 }
 
-.tenant-page-style .home-with-slide {
-  position: relative;
-  background: #fff;
-  padding: 2rem; /* Simplified padding */
-  margin-top: 0;  /* REMOVED negative margin */
-  border: 1px solid #e6e6e6;
-  border-radius: 4px;
-}
-
-/* --- REMOVED OLD HEADER STYLES --- */
-/* The styles for #header, .slider-content, .slider-static-background, etc. have been removed */
-
-/* --- GENERAL & GRID STYLES (Slightly updated for new font) --- */
-.tenant-page-style a {
-  color: #0073bb; /* Yelp-like link color */
-  text-decoration: none;
-}
-.tenant-page-style a:hover {
-  text-decoration: underline;
-}
-.tenant-page-style h1,
-.tenant-page-style h2,
-.tenant-page-style h3,
-.tenant-page-style h4 {
-  font-family: 'Poppins', sans-serif; /* Use new font for headers */
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--tenant-text-color);
-}
-.tenant-page-style .container {
-  margin-right: auto;
-  margin-left: auto;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .tenant-page-style .container {
-    width: 750px;
-  }
-}
-@media (min-width: 992px) {
-  .tenant-page-style .container {
-    width: 970px;
-  }
-}
-@media (min-width: 1200px) {
-  .tenant-page-style .container {
-    width: 1170px;
-  }
-}
-.tenant-page-style .row {
-  margin-left: -15px;
-  margin-right: -15px;
-}
-.tenant-page-style .col-md-3,
-.tenant-page-style .col-md-9 {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 992px) {
-  .tenant-page-style .col-md-3,
-  .tenant-page-style .col-md-9 {
-    float: left;
-  }
-  .tenant-page-style .col-md-9 {
-    width: 75%;
-  }
-  .tenant-page-style .col-md-3 {
-    width: 25%;
-  }
-}
-.tenant-page-style .clearfix:before,
-.tenant-page-style .clearfix:after,
-.tenant-page-style .container:before,
-.tenant-page-style .container:after,
-.tenant-page-style .row:before,
-.tenant-page-style .row:after {
-  content: " ";
-  display: table;
-}
-.tenant-page-style .clearfix:after,
-.tenant-page-style .container:after,
-.tenant-page-style .row:after {
-  clear: both;
-}
-.tenant-page-style .btn {
-  display: inline-block;
-  font-weight: normal;
-  text-align: center;
-  vertical-align: middle;
-  cursor: pointer;
-  border: 1px solid transparent;
-  white-space: nowrap;
-  padding: 5px 10px;
-  font-size: 14px;
-  line-height: 1.42857143;
-  border-radius: 3px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-}
-.tenant-page-style .btn-default {
-  color: #333333;
-  background-color: #fdc600;
-}
-.tenant-page-style .btn-default:hover,
-.tenant-page-style .btn-default:focus {
-  background: #333333 !important;
-  color: #fdc600;
-}
-.tenant-page-style #header {
-  position: relative;
-  width: 100%;
-}
-.tenant-page-style .slider-content {
-  position: relative;
-  z-index: 30;
-  width: 100%;
-  height: 580px;
-  overflow: hidden;
-  background: #333;
-}
-.tenant-page-style .slider-static-background {
+/* --- List/Map Layout --- */
+.tenant-page-style .listings-container {
   display: flex;
-  align-items: center;
+  background-color: #fff; /* Give the container a background */
+}
+
+.tenant-page-style .listings-panel {
+  width: 100%;
+  flex-shrink: 0;
+  /* UPDATED HEIGHT: Accounts for header (~73px) and footer (~61px) */
+  height: calc(100vh - 134px);
+  overflow-y: auto;
+}
+
+.tenant-page-style .listings-container.map-view .listings-panel {
+  width: 65%;
+  border-right: 1px solid #e6e6e6;
+}
+
+.tenant-page-style .map-panel {
+  width: 35%;
+  position: sticky;
+  top: 73px; /* Adjust based on header height */
+  height: calc(100vh - 73px);
+}
+
+.tenant-page-style .map-placeholder {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  height: 100%;
-}
-.tenant-page-style .slider-text-layer {
-  text-align: center;
-}
-.tenant-page-style .slider-content h1 {
-  text-transform: uppercase;
-  color: #fff;
-  font-size: 60px;
-  font-family: 'Raleway', sans-serif;
-  font-weight: 800;
-}
-.tenant-page-style .slider-content h1 span {
-  color: #fdc600;
-}
-.tenant-page-style .slider-content h2 {
-  color: #fff;
-  text-transform: uppercase;
-  font-size: 40px;
-}
-@media (max-width: 768px) {
-  .tenant-page-style .slider-content {
-    height: 420px;
-  }
-  .tenant-page-style .slider-content h1 {
-    font-size: 51px;
-  }
-  .tenant-page-style .slider-content h2 {
-    font-size: 36px;
-  }
-}
-@media (max-width: 480px) {
-  .tenant-page-style .slider-content h1 {
-    font-size: 36px;
-  }
-  .tenant-page-style .slider-content h2 {
-    font-size: 25px;
-  }
-}
-.tenant-page-style #page-content {
-  position: relative;
-  padding: 30px 0 50px 0;
-}
-.tenant-page-style .home-with-slide {
-  position: relative;
-  z-index: 100;
-  background: #fff;
-  padding-right: 30px;
-  margin-top: -30px;
-}
-.tenant-page-style #categories {
-  margin-top: 35px;
-  margin-bottom: 30px;
-}
-.tenant-page-style #categories .accordion ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.tenant-page-style #categories .accordion ul li {
-  background-color: #f8f8f8;
-  border-top: 1px solid #d0d0d0;
-  border-right: 1px solid #d0d0d0;
-  border-left: 3px solid transparent;
-  transition: all .3s ease;
-}
-.tenant-page-style #categories .accordion ul li:hover {
-  background-color: #fdc600;
-}
-.tenant-page-style #categories .accordion ul li a {
-  display: block;
-  padding: 15px 0 15px 30px;
-  text-transform: uppercase;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.tenant-page-style #categories .accordion ul li a:hover {
-  color: inherit;
-}
-.tenant-page-style #categories .accordion ul li a span {
-  font-weight: normal;
-  display: block;
-  margin: 0;
-  font-size: 13px;
-  text-transform: capitalize;
-}
-.tenant-page-style #categories .accordion ul li.active {
-  background-color: #fff;
-  border-right: 0;
-  border-left: 3px solid #fdc600;
-}
-.tenant-page-style #categories .accordion ul li:last-child {
-  border-bottom: 1px solid #c4c4c4;
-}
-.tenant-page-style .page-content {
-  position: relative;
-}
-.tenant-page-style .product-details .tab-pane {
-  display: none;
-}
-.tenant-page-style .product-details .tab-pane.active {
-  display: block;
-}
-.tenant-page-style .product-details .tab-pane h3 {
-  font-size: 30px;
-  font-weight: 800;
-  text-transform: uppercase;
-  margin-top: 25px;
-  margin-bottom: 25px;
-}
-.tenant-page-style .product-details .tab-pane h3 span {
-  font-weight: 400;
-}
-.tenant-page-style .listings-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-bottom: 15px;
+  height: 100%;
+  background-color: #e9ecef;
+  color: #6c757d;
+  font-size: 1.5rem;
 }
-.tenant-page-style .listings-header h3 {
-  margin: 0;
+
+.tenant-page-style .map-placeholder i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
-.tenant-page-style .view-toggle-buttons {
-  display: flex;
+
+/* --- Business Listing Cards --- */
+.tenant-page-style .business-listings {
+  padding-top: 1.5rem; /* Space between top of scroll and first item */
 }
-.tenant-page-style .view-toggle-buttons .btn {
-  margin-left: 5px;
-  font-weight: 600;
-}
-.tenant-page-style .view-toggle-buttons .btn .fa-solid {
-  margin-right: 6px;
-}
-.tenant-page-style .filter-btn {
-  display: none;
-}
+
 .tenant-page-style .business-listing {
   display: flex;
   align-items: center;
   padding: 20px 10px;
   border-bottom: 1px solid #e5e5e5;
-  transition: all .3s ease;
-  color: #333;
+  transition: background-color .2s ease;
+  text-decoration: none;
 }
+.tenant-page-style .business-listing:hover {
+  background-color: #fdf5f5;
+}
+
 .tenant-page-style .listing-image {
   width: 80px;
   height: 80px;
   margin-right: 20px;
   flex-shrink: 0;
 }
+
 .tenant-page-style .listing-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 3px;
+  border-radius: 4px;
 }
+
 .tenant-page-style .listing-content {
   flex: 1;
 }
-.tenant-page-style .business-listing:hover {
-  background-color: #f9f9f9;
-  color: #333;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
+
 .tenant-page-style .business-listing h4 {
   margin-top: 0;
   margin-bottom: 5px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #333333;
-  transition: color .3s ease;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #0073bb;
 }
+
 .tenant-page-style .business-listing:hover h4 {
-  color: #fdc600;
+  text-decoration: underline;
 }
-.tenant-page-style .business-listing .listing-category {
-  font-size: 13px;
-  color: #888;
+
+.tenant-page-style .listing-category {
+  font-size: 0.8rem;
+  color: #777;
   margin-bottom: 8px;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 500;
 }
+
 .tenant-page-style .business-listing p {
   margin-bottom: 0;
   color: #555;
-  line-height: 1.6;
+  line-height: 1.5;
 }
+
+/* --- Footer --- */
 .tenant-page-style #footer .copyright {
   position: relative;
   padding: 30px 0;
-  background-color: #1a1a1a;
-  font-size: 13px;
-  font-weight: 600;
-  color: #818181;
+  background-color: #333;
+  font-size: 0.8rem;
+  color: #ccc;
   text-transform: uppercase;
-}
-.tenant-page-style #footer .copyright a {
-  color: #818181;
 }
 .tenant-page-style #footer .copyright p {
   margin: 0;
-  float: left;
 }
-.tenant-page-style #footer .copyright p a {
-  color: #e4b200;
-}
-@media (max-width: 991px) {
-  .tenant-page-style .home-with-slide {
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 30px;
+
+/*
+================================================================
+PART 4: RESPONSIVE OVERRIDES
+================================================================
+*/
+
+@media (max-width: 992px) {
+  /* On tablets, stack the map on top of the list */
+  .tenant-page-style .listings-container.map-view {
+    flex-direction: column;
   }
-  .tenant-page-style .filter-btn {
-    display: inline-block;
-  }
-  .tenant-page-style .page-sidebar {
-    display: none;
-    margin-bottom: 20px;
-  }
-  .tenant-page-style .category-toggle,
-  .tenant-page-style .col-md-9 {
+  .tenant-page-style .listings-container.map-view .listings-panel,
+  .tenant-page-style .listings-container.map-view .map-panel {
     width: 100%;
-    float: none;
   }
-}
-@media (max-width: 480px) {
-  .tenant-page-style .product-details .tab-pane h3 {
-    font-size: 22px;
+  .tenant-page-style .map-panel {
+    position: relative;
+    top: 0;
+    height: 400px;
   }
-  .tenant-page-style .listings-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .tenant-page-style .listings-header h3 {
-    margin-bottom: 15px;
-  }
-  .tenant-page-style .business-listing {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .tenant-page-style .business-listing .listing-image {
-    margin-right: 0;
-    margin-bottom: 15px;
+  .tenant-page-style .listings-panel {
+    height: auto;
+    overflow-y: visible;
   }
 }
 
 @media (max-width: 768px) {
+  /* --- Mobile Header Layout --- */
   .tenant-page-style .header-content {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch; /* Make items take full width */
     gap: 1rem;
   }
-  .tenant-page-style .search-bar {
+  
+  .tenant-page-style .search-wrapper {
     max-width: none;
   }
-  .tenant-page-style .filter-btn {
-    display: inline-block;
+  
+  .tenant-page-style .btn-map-mobile {
+    display: inline-flex; /* Show the button */
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 1px solid var(--tenant-border-color);
+    color: var(--tenant-text-color);
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
   }
-  .tenant-page-style .page-sidebar {
+
+  /* --- Mobile Content Layout --- */
+  /* If map view is active on mobile, hide the map panel */
+  .tenant-page-style .map-panel {
     display: none;
-    margin-bottom: 20px;
   }
-  .tenant-page-style .category-toggle,
-  .tenant-page-style .col-md-9 {
+
+  /* Make sure listings panel takes full width if map was active */
+  .tenant-page-style .listings-container.map-view .listings-panel {
     width: 100%;
-    float: none;
   }
 }

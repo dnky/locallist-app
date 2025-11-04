@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import Head from 'next/head';
 
-export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads, categories }) {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [isSidebarVisible, setSidebarVisible] = useState(false);
-
-  const filteredAds = selectedCategory === 'All'
-    ? ads
-    : ads.filter(ad => ad.tags && ad.tags.split(',').map(t => t.trim()).includes(selectedCategory));
+export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
+  // Change the initial state from 'list' to 'map'
+  const [viewMode, setViewMode] = useState('map');
+  const adsToDisplay = ads;
 
   return (
     <>
@@ -16,91 +13,61 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       </Head>
 
       <div id="main-wrapper">
-        {/* ======================= HEADER UPDATED HERE ======================= */}
         <header className="tenant-header">
           <div className="container">
             <div className="header-content">
               <a href="/" className="tenant-logo">{tenantTitle}</a>
-              <div className="search-bar">
-                <input type="text" placeholder="Search businesses..." />
-                <button type="submit">
-                  <i className="fa-solid fa-search"></i>
+              <div className="search-wrapper">
+                <button
+                  className="btn-map-mobile"
+                  onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+                  title="Toggle map view"
+                >
+                  <i className="fa-solid fa-map-location-dot"></i>
                 </button>
+                <div className="search-bar">
+                  <input type="text" placeholder="Search businesses..." />
+                  <button type="submit">
+                    <i className="fa-solid fa-search"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </header>
-        {/* =================================================================== */}
 
-        <div id="page-content" className="home-slider-content">
-          {/* The rest of the component remains the same */}
-          <div className="container">
-            <div className="home-with-slide">
-              <div className="row">
-                <div className="col-md-3 category-toggle">
-                  <div className="page-sidebar" style={{ display: isSidebarVisible ? 'block' : '' }}>
-                    <div id="categories" style={{ marginTop: 0 }}>
-                      <div className="accordion">
-                        <ul className="nav nav-tabs home-tab" role="tablist">
-                          <li className={selectedCategory === 'All' ? 'active' : ''}>
-                            <a href="#" onClick={(e) => { e.preventDefault(); setSelectedCategory('All'); }}>
-                              All Categories<span>Display all listings</span>
-                            </a>
-                          </li>
-                          {categories.map(category => (
-                            <li key={category} className={selectedCategory === category ? 'active' : ''}>
-                              <a href="#" onClick={(e) => { e.preventDefault(); setSelectedCategory(category); }}>
-                                {category}<span>Filter by {category}</span>
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
+        <div id="page-content-full-width">
+          <div className={`listings-container ${viewMode === 'map' ? 'map-view' : ''}`}>
+            <div className="listings-panel">
+              <div className="container">
+                <div className="business-listings">
+                  {adsToDisplay.map(ad => (
+                    <a href={ad.web || '#'} target="_blank" rel="noopener noreferrer" className="business-listing" key={ad.id}>
+                      <div className="listing-image">
+                        <img
+                          src={ad.logoSrc ? `/${tenantDomain}/${ad.logoSrc}` : 'https://via.placeholder.com/80'}
+                          alt={`${ad.businessName} logo`}
+                        />
                       </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-9">
-                  <div className="page-content">
-                    <div className="product-details">
-                      <div className="tab-content">
-                        <div className="tab-pane active" id="all-categories">
-                          <div className="listings-header">
-                            <h3>Local <span>Business Listings</span></h3>
-                            <div className="view-toggle-buttons">
-                              <button
-                                id="filter-toggle-btn"
-                                className="btn btn-default filter-btn"
-                                type="button"
-                                onClick={() => setSidebarVisible(!isSidebarVisible)}
-                              >
-                                <i className="fa-solid fa-filter"></i> Filter
-                              </button>
-                            </div>
-                          </div>
-                          <div className="business-listings">
-                            {filteredAds.map(ad => (
-                              <a href={ad.web || '#'} target="_blank" rel="noopener noreferrer" className="business-listing" key={ad.id}>
-                                <div className="listing-image">
-                                  <img
-                                    src={ad.logoSrc ? `/${tenantDomain}/${ad.logoSrc}` : 'https://via.placeholder.com/80'}
-                                    alt={`${ad.businessName} logo`}
-                                  />
-                                </div>
-                                <div className="listing-content">
-                                  <h4>{ad.businessName}</h4>
-                                  {ad.tags && <div className="listing-category"><span>{ad.tags.split(',')[0].trim()}</span></div>}
-                                  <p>{ad.description || 'Contact this business for more information.'}</p>
-                                </div>
-                              </a>
-                            ))}
-                          </div>
-                        </div>
+                      <div className="listing-content">
+                        <h4>{ad.businessName}</h4>
+                        {ad.tags && <div className="listing-category"><span>{ad.tags.split(',')[0].trim()}</span></div>}
+                        <p>{ad.description || 'Contact this business for more information.'}</p>
                       </div>
-                    </div>
-                  </div>
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>
+
+            {viewMode === 'map' && (
+              <div className="map-panel">
+                <div className="map-placeholder">
+                  <i className="fa-solid fa-map"></i>
+                  <p>Map would be displayed here</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
