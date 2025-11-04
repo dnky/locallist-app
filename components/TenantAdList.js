@@ -51,8 +51,26 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                       </div>
                       <div className="listing-content">
                         <h4>{ad.businessName}</h4>
+                        {/* This category will be hidden on mobile via CSS */}
                         {ad.tags && <div className="listing-category"><span>{ad.tags.split(',')[0].trim()}</span></div>}
+                        {/* This description will be hidden on mobile via CSS */}
                         <p>{ad.description || 'Contact this business for more information.'}</p>
+
+                        {/* ======================= NEW MOBILE CONTACT INFO ======================= */}
+                        <div className="listing-contact-mobile">
+                          {ad.phone && (
+                            <a href={`tel:${ad.phone}`} onClick={(e) => e.stopPropagation()}>
+                              <i className="fa-solid fa-phone"></i> {ad.phone}
+                            </a>
+                          )}
+                          {ad.email && (
+                            <a href={`mailto:${ad.email}`} onClick={(e) => e.stopPropagation()}>
+                              <i className="fa-solid fa-envelope"></i> {ad.email}
+                            </a>
+                          )}
+                        </div>
+                        {/* =================================================================== */}
+
                       </div>
                     </a>
                   ))}

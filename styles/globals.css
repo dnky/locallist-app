@@ -257,7 +257,6 @@ All styles here are scoped to the `.tenant-page-style` class.
 .tenant-page-style .listings-panel {
   width: 100%;
   flex-shrink: 0;
-  /* UPDATED HEIGHT: Accounts for header (~73px) and footer (~61px) */
   height: calc(100vh - 134px);
   overflow-y: auto;
 }
@@ -270,7 +269,7 @@ All styles here are scoped to the `.tenant-page-style` class.
 .tenant-page-style .map-panel {
   width: 35%;
   position: sticky;
-  top: 73px; /* Adjust based on header height */
+  top: 73px;
   height: calc(100vh - 73px);
 }
 
@@ -290,9 +289,9 @@ All styles here are scoped to the `.tenant-page-style` class.
   margin-bottom: 1rem;
 }
 
-/* --- Business Listing Cards --- */
+/* --- Business Listing Cards (Desktop) --- */
 .tenant-page-style .business-listings {
-  padding-top: 1.5rem; /* Space between top of scroll and first item */
+  padding-top: 1.5rem;
 }
 
 .tenant-page-style .business-listing {
@@ -351,6 +350,10 @@ All styles here are scoped to the `.tenant-page-style` class.
   line-height: 1.5;
 }
 
+.tenant-page-style .listing-contact-mobile {
+  display: none; /* Hide on desktop */
+}
+
 /* --- Footer --- */
 .tenant-page-style #footer .copyright {
   position: relative;
@@ -394,7 +397,7 @@ PART 4: RESPONSIVE OVERRIDES
   /* --- Mobile Header Layout --- */
   .tenant-page-style .header-content {
     flex-direction: column;
-    align-items: stretch; /* Make items take full width */
+    align-items: stretch;
     gap: 1rem;
   }
   
@@ -403,7 +406,7 @@ PART 4: RESPONSIVE OVERRIDES
   }
   
   .tenant-page-style .btn-map-mobile {
-    display: inline-flex; /* Show the button */
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     background-color: #fff;
@@ -417,13 +420,73 @@ PART 4: RESPONSIVE OVERRIDES
   }
 
   /* --- Mobile Content Layout --- */
-  /* If map view is active on mobile, hide the map panel */
   .tenant-page-style .map-panel {
     display: none;
   }
-
-  /* Make sure listings panel takes full width if map was active */
   .tenant-page-style .listings-container.map-view .listings-panel {
     width: 100%;
+  }
+
+  /* ================== MOBILE BUSINESS LISTING REDESIGN ================== */
+  
+  .tenant-page-style .listings-panel .container {
+    padding: 0; /* Remove side padding to allow full-width border */
+  }
+
+  .tenant-page-style .business-listings {
+    padding-top: 0; /* No top padding needed */
+  }
+
+  .tenant-page-style .business-listing {
+    padding: 1rem 15px; /* Re-apply padding here */
+    align-items: flex-start; /* Align items to the top */
+  }
+
+  .tenant-page-style .listing-image {
+    width: 60px; /* Smaller image */
+    height: 60px;
+    margin-right: 15px;
+  }
+
+  .tenant-page-style .listing-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem; /* UPDATED: Reduced spacing */
+  }
+
+  .tenant-page-style .business-listing h4 {
+    font-size: 1rem; /* Slightly smaller title */
+    margin-bottom: 0;
+    line-height: 1.2; /* UPDATED: Tighter line height for alignment */
+  }
+
+  /* Hide desktop-only content */
+  .tenant-page-style .listing-category,
+  .tenant-page-style .business-listing p {
+    display: none;
+  }
+
+  /* Show and style mobile-only content */
+  .tenant-page-style .listing-contact-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .tenant-page-style .listing-contact-mobile a {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--tenant-text-color);
+    text-decoration: none;
+  }
+  .tenant-page-style .listing-contact-mobile a:hover {
+    color: var(--tenant-primary-color);
+  }
+
+  .tenant-page-style .listing-contact-mobile i {
+    color: #888;
+    margin-right: 0.5rem;
+    width: 1em; /* Ensures text aligns neatly */
   }
 }
