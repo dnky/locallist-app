@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 
 export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
   // Change the initial state from 'list' to 'map'
@@ -16,7 +17,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         <header className="tenant-header">
           <div className="container">
             <div className="header-content">
-              <a href="/" className="tenant-logo">{tenantTitle}</a>
+              <Link href="/" className="tenant-logo">{tenantTitle}</Link>
               <div className="search-wrapper">
                 <button
                   className="btn-map-mobile"
@@ -36,13 +37,20 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
           </div>
         </header>
 
-        <div id="page-content-full-width">
+<div id="page-content-full-width">
           <div className={`listings-container ${viewMode === 'map' ? 'map-view' : ''}`}>
             <div className="listings-panel">
               <div className="container">
                 <div className="business-listings">
                   {adsToDisplay.map(ad => (
-                    <a href={ad.web || '#'} target="_blank" rel="noopener noreferrer" className="business-listing" key={ad.id}>
+                    // ======================= CHANGE #1: Outer <a> becomes a <div> =======================
+                    <div className="business-listing" key={ad.id}>
+                      {/* --- NEW Invisible Overlay Link --- */}
+                      <a href={ad.web || '#'} target="_blank" rel="noopener noreferrer" className="card-link">
+                        <span className="sr-only">Visit {ad.businessName}</span>
+                      </a>
+                      {/* ---------------------------------- */}
+                      
                       <div className="listing-image">
                         <img
                           src={ad.logoSrc ? `/${tenantDomain}/${ad.logoSrc}` : 'https://via.placeholder.com/80'}
@@ -51,12 +59,8 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                       </div>
                       <div className="listing-content">
                         <h4>{ad.businessName}</h4>
-                        {/* This category will be hidden on mobile via CSS */}
                         {ad.tags && <div className="listing-category"><span>{ad.tags.split(',')[0].trim()}</span></div>}
-                        {/* This description will be hidden on mobile via CSS */}
                         <p>{ad.description || 'Contact this business for more information.'}</p>
-
-                        {/* ======================= NEW MOBILE CONTACT INFO ======================= */}
                         <div className="listing-contact-mobile">
                           {ad.phone && (
                             <a href={`tel:${ad.phone}`} onClick={(e) => e.stopPropagation()}>
@@ -69,10 +73,9 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                             </a>
                           )}
                         </div>
-                        {/* =================================================================== */}
-
                       </div>
-                    </a>
+                    </div>
+                    // ====================================================================================
                   ))}
                 </div>
               </div>

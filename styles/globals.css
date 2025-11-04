@@ -28,6 +28,19 @@ main.blurred {
     pointer-events: none;
 }
 
+/* Screen-reader only class for accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 
 /*
 ================================================================
@@ -294,17 +307,35 @@ All styles here are scoped to the `.tenant-page-style` class.
   padding-top: 1.5rem;
 }
 
+/* ================== UPDATED BUSINESS LISTING STYLES ================== */
 .tenant-page-style .business-listing {
+  position: relative; /* This is the positioning context for the overlay link */
   display: flex;
   align-items: center;
   padding: 20px 10px;
   border-bottom: 1px solid #e5e5e5;
   transition: background-color .2s ease;
-  text-decoration: none;
 }
 .tenant-page-style .business-listing:hover {
   background-color: #fdf5f5;
+  cursor: pointer; /* Give feedback that the whole div is clickable */
 }
+
+.tenant-page-style .card-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1; /* Sits below the content */
+}
+
+.tenant-page-style .listing-image,
+.tenant-page-style .listing-content {
+  position: relative; /* Put content on top of the overlay link */
+  z-index: 2;
+}
+/* ==================================================================== */
 
 .tenant-page-style .listing-image {
   width: 80px;
@@ -330,10 +361,10 @@ All styles here are scoped to the `.tenant-page-style` class.
   font-size: 1.15rem;
   font-weight: 600;
   color: #0073bb;
+  text-decoration: none; /* Remove underline from h4 since it's not a link */
 }
-
 .tenant-page-style .business-listing:hover h4 {
-  text-decoration: underline;
+  text-decoration: underline; /* Add underline on hover for visual feedback */
 }
 
 .tenant-page-style .listing-category {
@@ -427,23 +458,23 @@ PART 4: RESPONSIVE OVERRIDES
     width: 100%;
   }
 
-  /* ================== MOBILE BUSINESS LISTING REDESIGN ================== */
+  /* --- MOBILE BUSINESS LISTING REDESIGN --- */
   
   .tenant-page-style .listings-panel .container {
-    padding: 0; /* Remove side padding to allow full-width border */
+    padding: 0;
   }
 
   .tenant-page-style .business-listings {
-    padding-top: 0; /* No top padding needed */
+    padding-top: 0;
   }
 
   .tenant-page-style .business-listing {
-    padding: 1rem 15px; /* Re-apply padding here */
-    align-items: flex-start; /* Align items to the top */
+    padding: 1rem 15px;
+    align-items: flex-start;
   }
 
   .tenant-page-style .listing-image {
-    width: 60px; /* Smaller image */
+    width: 60px;
     height: 60px;
     margin-right: 15px;
   }
@@ -451,22 +482,20 @@ PART 4: RESPONSIVE OVERRIDES
   .tenant-page-style .listing-content {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem; /* UPDATED: Reduced spacing */
+    gap: 0.25rem;
   }
 
   .tenant-page-style .business-listing h4 {
-    font-size: 1rem; /* Slightly smaller title */
+    font-size: 1rem;
     margin-bottom: 0;
-    line-height: 1.2; /* UPDATED: Tighter line height for alignment */
+    line-height: 1.2;
   }
 
-  /* Hide desktop-only content */
   .tenant-page-style .listing-category,
   .tenant-page-style .business-listing p {
     display: none;
   }
 
-  /* Show and style mobile-only content */
   .tenant-page-style .listing-contact-mobile {
     display: flex;
     flex-direction: column;
@@ -479,6 +508,8 @@ PART 4: RESPONSIVE OVERRIDES
     font-size: 0.85rem;
     color: var(--tenant-text-color);
     text-decoration: none;
+    position: relative; /* Ensure these links are also on top of the card link */
+    z-index: 3;
   }
   .tenant-page-style .listing-contact-mobile a:hover {
     color: var(--tenant-primary-color);
@@ -487,6 +518,6 @@ PART 4: RESPONSIVE OVERRIDES
   .tenant-page-style .listing-contact-mobile i {
     color: #888;
     margin-right: 0.5rem;
-    width: 1em; /* Ensures text aligns neatly */
+    width: 1em;
   }
 }
