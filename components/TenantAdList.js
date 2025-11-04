@@ -12,25 +12,28 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   return (
     <>
       <Head>
-        <title>{tenantTitle}</title> {/* <-- USE NEW TITLE */}
+        <title>{tenantTitle}</title>
       </Head>
 
       <div id="main-wrapper">
-        <header id="header">
-          <div className="header-search slider-home">
-            <div className="slider-content" style={{ height: '200px' }}>
-              <div className="slider-static-background">
-                <div className="slider-text-layer">
-                  {/* USE THE NEW DYNAMIC TITLE HERE */}
-                  <h1 style={{ margin: 0 }}><span>{tenantTitle}</span></h1>
-                  <h2 style={{ margin: 0 }}>Local business directory</h2>
-                </div>
+        {/* ======================= HEADER UPDATED HERE ======================= */}
+        <header className="tenant-header">
+          <div className="container">
+            <div className="header-content">
+              <a href="/" className="tenant-logo">{tenantTitle}</a>
+              <div className="search-bar">
+                <input type="text" placeholder="Search businesses..." />
+                <button type="submit">
+                  <i className="fa-solid fa-search"></i>
+                </button>
               </div>
             </div>
           </div>
         </header>
+        {/* =================================================================== */}
 
         <div id="page-content" className="home-slider-content">
+          {/* The rest of the component remains the same */}
           <div className="container">
             <div className="home-with-slide">
               <div className="row">
@@ -78,8 +81,8 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                             {filteredAds.map(ad => (
                               <a href={ad.web || '#'} target="_blank" rel="noopener noreferrer" className="business-listing" key={ad.id}>
                                 <div className="listing-image">
-                                  <img 
-                                    src={ad.logoSrc ? `/${tenantDomain}/${ad.logoSrc}` : 'https://via.placeholder.com/80'} 
+                                  <img
+                                    src={ad.logoSrc ? `/${tenantDomain}/${ad.logoSrc}` : 'https://via.placeholder.com/80'}
                                     alt={`${ad.businessName} logo`}
                                   />
                                 </div>

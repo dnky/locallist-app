@@ -2,17 +2,26 @@ import TenantAdList from '../components/TenantAdList';
 import prisma from '../lib/prisma';
 
 export default function DomainPage(props) {
-  if (props.error) {
-    return (
-      <main style={{ textAlign: 'center', paddingTop: '20vh' }}>
-        <h1>An Error Occurred</h1>
-        <p>{props.error}</p>
-      </main>
-    );
-  }
-  return <TenantAdList {...props} />;
+  // 1. Destructure the pageClass prop, just like in index.js
+  const { pageClass, ...rest } = props;
+
+  return (
+    // 2. Wrap the entire output in a div with the pageClass
+    <div className={pageClass}>
+      {props.error ? (
+        <main style={{ textAlign: 'center', paddingTop: '20vh' }}>
+          <h1>An Error Occurred</h1>
+          <p>{props.error}</p>
+        </main>
+      ) : (
+        // 3. Pass the rest of the props down to the component
+        <TenantAdList {...rest} />
+      )}
+    </div>
+  );
 }
 
+// getServerSideProps does not need to change
 export async function getServerSideProps(context) {
   const { domain } = context.params;
 
@@ -37,13 +46,11 @@ export async function getServerSideProps(context) {
     });
     const categories = Array.from(allTags).sort();
 
-    console.log("Tenant fetched from database:", tenant);
-
     return {
       props: {
         ads: JSON.parse(JSON.stringify(ads)),
         tenantName: tenant.name,
-        tenantTitle: tenant.title, // <-- ADD THIS
+        tenantTitle: tenant.title,
         tenantDomain: tenant.domain,
         categories: categories,
       },

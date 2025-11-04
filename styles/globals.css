@@ -145,54 +145,117 @@ PART 3: TENANT DIRECTORY STYLES (`spaxton.info`, etc.)
 All styles here are scoped to the `.tenant-page-style` class.
 ================================================================
 */
+
+/* --- NEW Tenant Page Color Theme & Font --- */
 .tenant-page-style {
-  font-family: sans-serif;
-  color: #333333;
-  background-color: #ffffff;
+  font-family: 'Poppins', sans-serif; /* New font */
+  color: #333;
+  background-color: #f7f7f7; /* Lighter gray background */
+
+  /* Yelp-inspired colors */
+  --tenant-primary-color: #d32323; /* Yelp Red */
+  --tenant-text-color: #2d2e2f;
+  --tenant-border-color: #ccc;
+  --tenant-light-gray: #f7f7f7;
 }
+
+/* --- NEW Header Styles --- */
+.tenant-page-style .tenant-header {
+  background-color: #fff;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e6e6e6;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.tenant-page-style .header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.tenant-page-style .tenant-logo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--tenant-primary-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tenant-page-style .search-bar {
+   display: flex;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.tenant-page-style .search-bar:focus-within {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.tenant-page-style .search-bar input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--tenant-border-color);
+  border-right: none; /* The container's border will handle the right edge visually */
+  border-radius: 4px 0 0 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.tenant-page-style .search-bar input:focus {
+  border-color: var(--tenant-primary-color);
+}
+
+.tenant-page-style .search-bar button {
+  padding: 0.75rem 1rem;
+  border: none;
+  background-color: var(--tenant-primary-color);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 0 4px 4px 0;
+  font-size: 1rem;
+}
+
+/* --- ADJUSTED Content Area Styles --- */
+.tenant-page-style #page-content {
+  position: relative;
+  padding: 2rem 0; /* Changed from 30px 0 50px 0 */
+}
+
+.tenant-page-style .home-with-slide {
+  position: relative;
+  background: #fff;
+  padding: 2rem; /* Simplified padding */
+  margin-top: 0;  /* REMOVED negative margin */
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+}
+
+/* --- REMOVED OLD HEADER STYLES --- */
+/* The styles for #header, .slider-content, .slider-static-background, etc. have been removed */
+
+/* --- GENERAL & GRID STYLES (Slightly updated for new font) --- */
 .tenant-page-style a {
-  color: #333333;
+  color: #0073bb; /* Yelp-like link color */
   text-decoration: none;
 }
-.tenant-page-style a:hover,
-.tenant-page-style a:focus {
-  color: #fdc600;
-  transition: all .3s ease;
-}
-.tenant-page-style a:focus {
-  outline: 0;
-}
-.tenant-page-style ul,
-.tenant-page-style ol {
-  margin-top: 0;
-  margin-bottom: 20px;
+.tenant-page-style a:hover {
+  text-decoration: underline;
 }
 .tenant-page-style h1,
 .tenant-page-style h2,
 .tenant-page-style h3,
 .tenant-page-style h4 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 700;
-  line-height: 1.1;
-  color: #333333;
-}
-.tenant-page-style h1,
-.tenant-page-style h2,
-.tenant-page-style h3 {
-  margin-top: 1.42857143;
-  margin-bottom: 1.42857143;
-}
-.tenant-page-style h1 {
-  font-size: 36px;
-}
-.tenant-page-style h2 {
-  font-size: 30px;
-}
-.tenant-page-style h3 {
-  font-size: 24px;
-}
-.tenant-page-style p {
-  margin: 0 0 20px;
+  font-family: 'Poppins', sans-serif; /* Use new font for headers */
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--tenant-text-color);
 }
 .tenant-page-style .container {
   margin-right: auto;
@@ -537,5 +600,28 @@ All styles here are scoped to the `.tenant-page-style` class.
   .tenant-page-style .business-listing .listing-image {
     margin-right: 0;
     margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tenant-page-style .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .tenant-page-style .search-bar {
+    max-width: none;
+  }
+  .tenant-page-style .filter-btn {
+    display: inline-block;
+  }
+  .tenant-page-style .page-sidebar {
+    display: none;
+    margin-bottom: 20px;
+  }
+  .tenant-page-style .category-toggle,
+  .tenant-page-style .col-md-9 {
+    width: 100%;
+    float: none;
   }
 }
