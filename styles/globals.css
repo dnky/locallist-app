@@ -520,4 +520,29 @@ PART 4: RESPONSIVE OVERRIDES
     margin-right: 0.5rem;
     width: 1em;
   }
+
+  /* ================== NEW MOBILE VIEW TOGGLING LOGIC ================== */
+  
+  /* When in LIST view on mobile, show the list panel */
+  .tenant-page-style .listings-container.mobile-list-view .listings-panel {
+    display: block;
+  }
+  /* When in LIST view on mobile, hide the map panel */
+  .tenant-page-style .listings-container.mobile-list-view .map-panel {
+    display: none;
+  }
+
+  /* When in MAP view on mobile, hide the list panel */
+  .tenant-page-style .listings-container.mobile-map-view .listings-panel {
+    display: none;
+  }
+  /* When in MAP view on mobile, show the map panel */
+  .tenant-page-style .listings-container.mobile-map-view .map-panel {
+    display: block;
+    position: relative;
+    top: 0;
+    width: 100%;
+    /* Give the map a full-screen-like height on mobile */
+    height: calc(100vh - 134px); /* Full height minus header and footer */
+  }
 }

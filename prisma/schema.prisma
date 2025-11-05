@@ -17,8 +17,8 @@ model Tenant {
 }
 
 model Ad {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId     String   @db.Uuid
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String    @db.Uuid
   businessName String
   description  String?
   imageSrc     String
@@ -29,6 +29,8 @@ model Ad {
   grid_w       Int
   grid_h       Int
   tags         String?
-  createdAt    DateTime @default(now()) @db.Timestamptz
-  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  lat          Float?
+  lng          Float?
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  tenant       Tenant    @relation(fields: [tenantId], references: [id])
 }
