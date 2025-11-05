@@ -1,35 +1,43 @@
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import Link from 'next/link'; // <-- THIS IS THE MISSING LINE
+import Link from 'next/link';
 
-// --- NEW: Custom DivIcon for CSS styling ---
-const createIcon = (isHighlighted = false) => {
-  return L.divIcon({
-    html: `<i class="fa-solid fa-location-dot"></i>`,
-    className: `custom-marker-icon ${isHighlighted ? 'highlighted' : ''}`,
-    iconSize: [30, 42],
-    iconAnchor: [15, 42],
-    popupAnchor: [0, -42]
-  });
-};
+// ======================= THE DEFINITIVE FIX =======================
+// This code block explicitly sets the paths for Leaflet's default icon images.
+// It points to a public CDN (unpkg) to ensure the images are always found,
+// regardless of the build environment. This fixes the "invisible marker" bug.
+delete L.Icon.Default.prototype._getIconUrl;
 
-export default function DynamicMap({ ads, hoveredAdId }) {
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
+// ====================================================================
+
+export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
   const markerRefs = useRef({});
+  const mapRef = useRef(null);
 
-  // Effect to open/close popups when hoveredAdId prop changes
+  // Effect to handle hover highlighting (remains the same)
   useEffect(() => {
-    // First, close all popups to clear any stray ones
     Object.values(markerRefs.current).forEach(marker => {
       if (marker) marker.closePopup();
     });
-
-    // If a valid ad is hovered, open its popup
     if (hoveredAdId && markerRefs.current[hoveredAdId]) {
       markerRefs.current[hoveredAdId].openPopup();
     }
   }, [hoveredAdId]);
 
+  // Effect to handle resizing on mobile (remains the same)
+  useEffect(() => {
+    if (viewMode === 'map' && mapRef.current) {
+      setTimeout(() => {
+        mapRef.current.invalidateSize();
+      }, 100);
+    }
+  }, [viewMode]);
 
   const adsWithCoords = ads.filter(ad => ad.lat && ad.lng);
   const mapCenter = adsWithCoords.length > 0
@@ -37,7 +45,7 @@ export default function DynamicMap({ ads, hoveredAdId }) {
     : [51.505, -0.09];
 
   return (
-    <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
+    <MapContainer ref={mapRef} center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -46,20 +54,25 @@ export default function DynamicMap({ ads, hoveredAdId }) {
         <Marker
           key={ad.id}
           position={[ad.lat, ad.lng]}
-          // --- Store a ref to each marker instance ---
           ref={el => (markerRefs.current[ad.id] = el)}
-          // --- Add direct hover event handlers ---
           eventHandlers={{
-            mouseover: (event) => event.target.openPopup(),
-            mouseout: (event) => event.target.closePopup(),
+            mouseover: (event) => {
+              // Highlight the marker on hover
+              event.target.setZIndexOffset(1000);
+              event.target.openPopup();
+            },
+            mouseout: (event) => {
+              event.target.setZIndexOffset(0);
+              event.target.closePopup();
+            },
           }}
-          // --- Use the custom icon that reacts to hover state ---
-          icon={createIcon(ad.id === hoveredAdId)}
+          // We no longer need a custom icon function. The default icon is now fixed.
+          // We'll add a class for highlighting via CSS instead.
+          className={ad.id === hoveredAdId ? 'marker-highlighted' : ''}
         >
           <Popup>
             <strong>{ad.businessName}</strong>
             <br />
-            {/* --- LINK TO DETAIL PAGE --- */}
             <Link href={`/details?id=${ad.id}`}>
               View Details
             </Link>
