@@ -17,6 +17,8 @@ L.Icon.Default.mergeOptions({
 // ====================================================================
 
 export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
+  console.log("[MAP_PROPS] Ads received by map:", ads);  
+
   const markerRefs = useRef({});
   const mapRef = useRef(null);
 
@@ -40,6 +42,9 @@ export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
   }, [viewMode]);
 
   const adsWithCoords = ads.filter(ad => ad.lat && ad.lng);
+  
+  console.log(`[MAP_FILTER] Found ${adsWithCoords.length} ads with coordinates.`);
+  
   const mapCenter = adsWithCoords.length > 0
     ? [adsWithCoords[0].lat, adsWithCoords[0].lng]
     : [51.505, -0.09];

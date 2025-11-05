@@ -38,8 +38,11 @@ export async function getServerSideProps(context) {
       where: { tenantId: tenant.id },
     });
     
+    console.log(`[VERCEL_SERVER_LOG] Fetched ${ads.length} ads for domain: ${domain}`);
+    console.log("[VERCEL_SERVER_LOG] First ad data:", JSON.stringify(ads[0], null, 2));
+
     console.log("Ads fetched from server:", JSON.stringify(ads, null, 2));
-    
+
     const allTags = new Set();
     ads.forEach(ad => {
       if (ad.tags) {

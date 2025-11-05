@@ -9,6 +9,8 @@ const DynamicMap = dynamic(() => import('./DynamicMap'), {
 });
 
 export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
+  console.log("[CLIENT_RECEIVED_PROPS] Ads received on initial load:", ads);
+  
   const [viewMode, setViewMode] = useState('map');
   const [hoveredAdId, setHoveredAdId] = useState(null);
   const adsToDisplay = ads;
