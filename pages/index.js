@@ -19,7 +19,7 @@ export default function IndexPage(props) {
 }
 
 export async function getServerSideProps(context) {
-  const host = context.req.headers.host;
+  const host = context.req.headers.host; 
 
   try {
     const tenant = await prisma.tenant.findUnique({
@@ -30,27 +30,35 @@ export async function getServerSideProps(context) {
       return { notFound: true };
     }
 
+    // Fetches data into the `ads` variable
     const ads = await prisma.ad.findMany({
       where: { tenantId: tenant.id },
     });
 
-    // ======================= THE ROBUST FIX =======================
-    // Step 1: Force all data into a plain, JSON-safe format.
-    const plainAds = JSON.parse(JSON.stringify(ads));
-
-    // Step 2: Now that we have plain objects, map over them
-    // to explicitly convert the string coordinates into numbers.
-    const serializableAds = plainAds.map(ad => ({
-      ...ad, // Keep all other properties
-      lat: ad.lat ? parseFloat(ad.lat) : null,
-      lng: ad.lng ? parseFloat(ad.lng) : null,
+    // ======================= THE FINAL FIX =======================
+    // Use the CORRECT variable `ads` to map over the data.
+    // This ensures lat/lng are properly parsed and sent to the client.
+    const serializableAds = ads.map(ad => ({
+      id: ad.id,
+      tenantId: ad.tenantId,
+      businessName: ad.businessName,
+      description: ad.description,
+      imageSrc: ad.imageSrc,
+      logoSrc: ad.logoSrc,
+      phone: ad.phone,
+      email: ad.email,
+      web: ad.web,
+      tags: ad.tags,
+      // Ensure lat/lng are numbers or null
+      lat: ad.lat ? parseFloat(ad.lat.toString()) : null,
+      lng: ad.lng ? parseFloat(ad.lng.toString()) : null,
     }));
-    // =============================================================
 
     const allTags = new Set();
+    // Use the CORRECT variable `ads` here as well.
     ads.forEach(ad => {
       if (ad.tags) {
-        ad.tags.split(",").forEach(tag => allTags.add(tag.trim()));
+        ad.tags.split(',').forEach(tag => allTags.add(tag.trim()));
       }
     });
     const categories = Array.from(allTags).sort();
@@ -63,12 +71,13 @@ export async function getServerSideProps(context) {
         tenantDomain: tenant.domain,
       },
     };
-  } catch (error) {
+  } catch (error)
+   {
     console.error("Failed to fetch data for index:", error);
     return {
       props: {
-        error: "Could not connect to the database.",
-      },
+        error: "Could not connect to the database."
+      }
     };
   }
 }
