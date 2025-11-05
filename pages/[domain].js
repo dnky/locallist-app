@@ -26,6 +26,8 @@ export async function getServerSideProps(context) {
   const { domain } = context.params;
 
   try {
+    console.log(`[DEBUG_STEP_1] Attempting to fetch ads for domain: ${domain}`);
+
     const tenant = await prisma.tenant.findUnique({
       where: { domain: domain },
     });
@@ -35,8 +37,25 @@ export async function getServerSideProps(context) {
     }
 
     const adsFromDb = await prisma.ad.findMany({
-      where: { tenantId: tenant.id },
+      where: {
+        tenant: {
+          domain: domain
+        }
+      },
+      // Also fetch tenant in the same query for efficiency
+      include: {
+        tenant: true
+      }
     });
+
+    // If this log appears, the database connection was SUCCESSFUL.
+    console.log(`[DEBUG_STEP_2] Successfully fetched ${adsFromDb.length} ads from the database.`);
+    
+    // Let's inspect the raw data type of 'lat' for the first ad
+    if (adsFromDb.length > 0) {
+      console.log(`[DEBUG_STEP_3] Raw 'lat' value:`, adsFromDb[0].lat);
+      console.log(`[DEBUG_STEP_3] Type of 'lat':`, typeof adsFromDb[0].lat);
+    }
 
     // ======================= THE FIX =======================
     // Manually map the array to create clean, serializable objects.
