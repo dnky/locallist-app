@@ -38,6 +38,8 @@ export async function getServerSideProps(context) {
       where: { tenantId: tenant.id },
     });
     
+    console.log("Ads fetched from server:", JSON.stringify(ads, null, 2));
+    
     const allTags = new Set();
     ads.forEach(ad => {
       if (ad.tags) {
