@@ -36,7 +36,8 @@ export async function getServerSideProps(context) {
 
     // ======================= THE FIX =======================
     // Manually map the array to create clean, serializable objects.
-    // This explicitly converts lat/lng to numbers (or null if they don't exist).
+    // This explicitly converts lat/lng to numbers (or null if they don't exist),
+    // fixing the issue where they are passed as strings in production.
     const serializableAds = ads.map(ad => ({
       id: ad.id,
       tenantId: ad.tenantId,
