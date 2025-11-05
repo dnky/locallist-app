@@ -21,7 +21,6 @@ export default function DomainPage(props) {
   );
 }
 
-// getServerSideProps does not need to change
 export async function getServerSideProps(context) {
   const { domain } = context.params;
 
@@ -57,9 +56,8 @@ export async function getServerSideProps(context) {
       console.log(`[DEBUG_STEP_3] Type of 'lat':`, typeof adsFromDb[0].lat);
     }
 
-    // ======================= THE FIX =======================
-    // Manually map the array to create clean, serializable objects.
-    // This explicitly converts lat/lng to numbers (or null if they don't exist).
+    // ======================= THE FIX (with logging) =======================
+    // This explicit mapping handles potential data type issues from the database.
     const serializableAds = adsFromDb.map(ad => ({
       id: ad.id,
       tenantId: ad.tenantId,
@@ -76,10 +74,11 @@ export async function getServerSideProps(context) {
       lng: ad.lng ? parseFloat(ad.lng) : null,
     }));
     
-    console.log(`[VERCEL_SERVER_LOG] Fetched ${adsFromDb.length} ads for domain: ${domain}`);
-    console.log("[VERCEL_SERVER_LOG] First ad data:", JSON.stringify(adsFromDb[0], null, 2));
-
-    console.log("Ads fetched from server:", JSON.stringify(adsFromDb, null, 2));
+    // Add a log that is easy to find on Vercel
+    console.log(`[VERCEL_SERVER_LOG] Processed ${serializableAds.length} ads for domain: ${domain}`);
+    if (serializableAds.length > 0) {
+        console.log("[VERCEL_SERVER_LOG] First processed ad data:", JSON.stringify(serializableAds[0], null, 2));
+    }
 
     const allTags = new Set();
     adsFromDb.forEach(ad => {
