@@ -37,7 +37,7 @@ export async function getServerSideProps(context) {
     // ======================= THE FIX =======================
     // Manually map the array to create clean, serializable objects.
     // This explicitly converts lat/lng to numbers (or null if they don't exist).
-    const serializableAds = adsFromDb.map(ad => ({
+    const serializableAds = ads.map(ad => ({
       id: ad.id,
       tenantId: ad.tenantId,
       businessName: ad.businessName,
@@ -54,7 +54,7 @@ export async function getServerSideProps(context) {
     }));
 
     const allTags = new Set();
-    adsFromDb.forEach(ad => {
+    ads.forEach(ad => {
       if (ad.tags) {
         ad.tags.split(',').forEach(tag => allTags.add(tag.trim()));
       }
