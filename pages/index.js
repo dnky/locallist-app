@@ -30,7 +30,7 @@ export async function getServerSideProps(context) {
       return { notFound: true };
     }
 
-    const adsFromDb = await prisma.ad.findMany({
+    const ads = await prisma.ad.findMany({
       where: { tenantId: tenant.id },
     });
 
@@ -54,7 +54,7 @@ export async function getServerSideProps(context) {
     }));
 
     const allTags = new Set();
-    ads.forEach(ad => {
+    adsFromDb.forEach(ad => {
       if (ad.tags) {
         ad.tags.split(',').forEach(tag => allTags.add(tag.trim()));
       }

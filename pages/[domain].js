@@ -57,13 +57,13 @@ export async function getServerSideProps(context) {
       lng: ad.lng ? parseFloat(ad.lng) : null,
     }));
     
-    console.log(`[VERCEL_SERVER_LOG] Fetched ${ads.length} ads for domain: ${domain}`);
-    console.log("[VERCEL_SERVER_LOG] First ad data:", JSON.stringify(ads[0], null, 2));
+    console.log(`[VERCEL_SERVER_LOG] Fetched ${adsFromDb.length} ads for domain: ${domain}`);
+    console.log("[VERCEL_SERVER_LOG] First ad data:", JSON.stringify(adsFromDb[0], null, 2));
 
-    console.log("Ads fetched from server:", JSON.stringify(ads, null, 2));
+    console.log("Ads fetched from server:", JSON.stringify(adsFromDb, null, 2));
 
     const allTags = new Set();
-    ads.forEach(ad => {
+    adsFromDb.forEach(ad => {
       if (ad.tags) {
         ad.tags.split(',').forEach(tag => allTags.add(tag.trim()));
       }
