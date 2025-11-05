@@ -1,5 +1,4 @@
 import '../styles/globals.css';
-import 'leaflet/dist/leaflet.css';
 
 function MyApp({ Component, pageProps, router }) {
   let pageClass = '';
@@ -14,7 +13,6 @@ function MyApp({ Component, pageProps, router }) {
     pageClass = 'tenant-page-style';
   }
 
-  // Pass the determined class as a prop to every page
   return <Component {...pageProps} pageClass={pageClass} />;
 }
 

@@ -693,3 +693,23 @@ PART 4: RESPONSIVE OVERRIDES
   height: 100%;
 }
 
+.tenant-page-style .leaflet-marker-icon {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Apply a filter to make the highlighted marker stand out */
+.tenant-page-style .marker-highlighted .leaflet-marker-icon {
+  /* A combination of brightness and hue-rotate gives a nice highlight effect */
+  filter: brightness(1.2) saturate(1.5) hue-rotate(190deg);
+  transform: scale(1.3); /* Make it slightly bigger */
+}
+
+/* Leaflet popup customization */
+.tenant-page-style .leaflet-popup-content-wrapper {
+  border-radius: 4px;
+}
+.tenant-page-style .leaflet-popup-content {
+  margin: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+}
