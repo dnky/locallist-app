@@ -14,38 +14,65 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-// ======================= NEW HELPER COMPONENT =======================
-// This component uses the `useMap` hook to get the map instance
-// and applies effects to it, like fitting bounds.
-function MapEffect({ ads, viewMode }) {
-  const map = useMap(); // This hook gives us access to the map instance
+function MapEffect({ ads, filteredAdIds, searchQuery, viewMode }) {
+  const map = useMap();
 
-  // Effect for fitting bounds on load or when ads change
   useEffect(() => {
-    if (ads && ads.length > 0) {
-      const bounds = L.latLngBounds(ads.map(ad => [ad.lat, ad.lng]));
+    const adsToFit = searchQuery.length > 0 ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
+    
+    if (adsToFit && adsToFit.length > 0) {
+      const bounds = L.latLngBounds(adsToFit.map(ad => [ad.lat, ad.lng]));
       map.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [ads, map]);
+  }, [ads, filteredAdIds, searchQuery, map]);
 
-  // Effect for handling map resizing on mobile view toggle
   useEffect(() => {
     if (viewMode === 'map') {
-      // A small delay ensures the map container has resized before invalidating
       setTimeout(() => {
         map.invalidateSize();
+        const adsToFit = searchQuery.length > 0 ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
+        if (adsToFit && adsToFit.length > 0) {
+          const bounds = L.latLngBounds(adsToFit.map(ad => [ad.lat, ad.lng]));
+          map.fitBounds(bounds, { padding: [50, 50] });
+        }
       }, 100);
     }
-  }, [viewMode, map]);
+  }, [viewMode, map, ads, filteredAdIds, searchQuery]);
 
-  return null; // This component does not render any visible JSX
+  return null;
 }
-// ====================================================================
 
-export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
+// --- THIS IS THE FIX ---
+// Add default values for all props that might not be passed.
+export default function DynamicMap({
+  ads,
+  filteredAdIds = new Set(), // Default to an empty Set
+  searchQuery = '',          // Default to an empty string
+  hoveredAdId = null,        // Default to null
+  viewMode = 'map'           // Default to 'map'
+}) {
   const markerRefs = useRef({});
+  // Ensure 'ads' itself isn't undefined before filtering
+  const adsWithCoords = (ads || []).filter(ad => ad.lat && ad.lng); 
+  const mapCenter = [51.505, -0.09];
+  const isSearching = searchQuery.length > 0;
 
-  // Effect to handle hover highlighting (remains the same)
+  useEffect(() => {
+    adsWithCoords.forEach(ad => {
+      const marker = markerRefs.current[ad.id];
+      if (!marker || !marker._icon) return;
+
+      marker._icon.classList.remove('marker-highlighted', 'marker-unmatched');
+
+      if (ad.id === hoveredAdId) {
+        marker._icon.classList.add('marker-highlighted');
+      }
+      else if (isSearching && !filteredAdIds.has(ad.id)) {
+        marker._icon.classList.add('marker-unmatched');
+      }
+    });
+  }, [isSearching, filteredAdIds, hoveredAdId, adsWithCoords]);
+
   useEffect(() => {
     Object.values(markerRefs.current).forEach(marker => {
       if (marker) marker.closePopup();
@@ -55,49 +82,46 @@ export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
     }
   }, [hoveredAdId]);
 
-  const adsWithCoords = ads.filter(ad => ad.lat && ad.lng);
-  
-  // A default center in case there are no ads with coordinates.
-  const mapCenter = [51.505, -0.09];
 
   return (
-    // We no longer need the `ref` here.
     <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       
-      {/* Render the markers as before */}
-      {adsWithCoords.map(ad => (
-        <Marker
-          key={ad.id}
-          position={[ad.lat, ad.lng]}
-          ref={el => (markerRefs.current[ad.id] = el)}
-          eventHandlers={{
-            mouseover: (event) => {
-              event.target.setZIndexOffset(1000);
-              event.target.openPopup();
-            },
-            mouseout: (event) => {
-              event.target.setZIndexOffset(0);
-              event.target.closePopup();
-            },
-          }}
-          className={ad.id === hoveredAdId ? 'marker-highlighted' : ''}
-        >
-          <Popup>
-            <strong>{ad.businessName}</strong>
-            <br />
-            <Link href={`/details?id=${ad.id}`}>
-              View Details
-            </Link>
-          </Popup>
-        </Marker>
-      ))}
+      {adsWithCoords.map(ad => {
+        const isMatched = filteredAdIds.has(ad.id);
+        const eventHandlers = (isSearching && !isMatched) ? {} : {
+          mouseover: (event) => {
+            event.target.setZIndexOffset(1000);
+            event.target.openPopup();
+          },
+          mouseout: (event) => {
+            event.target.setZIndexOffset(0);
+            event.target.closePopup();
+          },
+        };
 
-      {/* NEW: Add our MapEffect component as a child of MapContainer */}
-      <MapEffect ads={adsWithCoords} viewMode={viewMode} />
+        return (
+          <Marker
+            key={ad.id}
+            position={[ad.lat, ad.lng]}
+            ref={el => (markerRefs.current[ad.id] = el)}
+            eventHandlers={eventHandlers}
+          >
+            <Popup>
+              <strong>{ad.businessName}</strong>
+              <br />
+              <Link href={`/details?id=${ad.id}`}>
+                View Details
+              </Link>
+            </Popup>
+          </Marker>
+        );
+      })}
+
+      <MapEffect ads={adsWithCoords} filteredAdIds={filteredAdIds} searchQuery={searchQuery} viewMode={viewMode} />
     </MapContainer>
   );
 }

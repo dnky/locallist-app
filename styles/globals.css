@@ -55,9 +55,18 @@ main.blurred {
   transition: all 0.2s ease-in-out;
 }
 
-/* Apply a filter to make the highlighted marker stand out */
-/* This class is applied dynamically in DynamicMap.js */
-.marker-highlighted .leaflet-marker-icon {
-  filter: brightness(1.2) saturate(1.5) hue-rotate(190deg);
+/* ================== FINAL MARKER STYLES ================== */
+
+/* Grey marker for unmatched search results */
+.marker-unmatched {
+  filter: grayscale(1) opacity(0.5);
+}
+
+/* Red marker for the hovered state */
+.marker-highlighted {
+  /* This is a generated filter to force the color to red (#D32323) */
+  /* It works by inverting, turning to sepia, then rotating the hue */
+  filter: invert(25%) sepia(74%) saturate(4531%) hue-rotate(343deg) brightness(91%) contrast(93%);
   transform: scale(1.3);
 }
+/* ======================================================= */

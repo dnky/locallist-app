@@ -12,23 +12,21 @@ const DynamicMap = dynamic(() => import('./DynamicMap'), {
 
 export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
   const router = useRouter();
-  const [viewMode, setViewMode] = useState('map');
+  // --- CHANGE 1: Default to 'list' view ---
+  const [viewMode, setViewMode] = useState('list');
   const [hoveredAdId, setHoveredAdId] = useState(null);
-
-  // --- NEW STATE FOR SEARCH ---
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAds, setFilteredAds] = useState(ads);
-  // ----------------------------
 
-  // --- NEW EFFECT FOR FILTERING ---
+  const filteredAdIds = new Set(filteredAds.map(ad => ad.id));
+
   useEffect(() => {
     const lowercasedQuery = searchQuery.toLowerCase();
 
     if (!lowercasedQuery) {
-      setFilteredAds(ads); // If search is empty, show all ads
+      setFilteredAds(ads);
     } else {
       const results = ads.filter(ad => {
-        // Check if the query exists in any of the specified fields
         const nameMatch = ad.businessName?.toLowerCase().includes(lowercasedQuery);
         const tagsMatch = ad.tags?.toLowerCase().includes(lowercasedQuery);
         const descMatch = ad.description?.toLowerCase().includes(lowercasedQuery);
@@ -41,13 +39,11 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       setFilteredAds(results);
     }
   }, [searchQuery, ads]);
-  // ---------------------------------
 
   const handleListingClick = (adId) => {
     router.push(`/details?id=${adId}`);
   };
 
-  // Helper to combine CSS module class names
   const listingsContainerClasses = [
     styles.listingsContainer,
     viewMode === 'map' ? styles.mapView : '',
@@ -74,14 +70,13 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                   <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
                 </button>
                 <div className={styles.searchBar}>
-                  {/* MODIFIED INPUT */}
                   <input
                     type="text"
                     placeholder="Search businesses..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button type="button"> {/* Changed from submit to button */}
+                  <button type="button">
                     <i className="fa-solid fa-search"></i>
                   </button>
                 </div>
@@ -94,13 +89,13 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
           <div className={listingsContainerClasses}>
             <div className={styles.listingsPanel}>
               <div className={styles.container}>
-                {/* NEW: RESULTS COUNTER */}
-                <div className={styles.resultsCounter}>
-                  Showing {filteredAds.length} of {ads.length} businesses
-                </div>
+                {searchQuery.length > 0 && (
+                  <div className={styles.resultsCounter}>
+                    Showing {filteredAds.length} of {ads.length} businesses
+                  </div>
+                )}
 
                 <div className={styles.businessListings}>
-                  {/* MODIFIED: Use filteredAds to render the list */}
                   {filteredAds.map(ad => (
                     <div
                       className={styles.businessListing}
@@ -140,8 +135,13 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
             </div>
 
             <div className={styles.mapPanel}>
-              {/* MODIFIED: Pass filteredAds to the map */}
-              <DynamicMap ads={filteredAds} hoveredAdId={hoveredAdId} viewMode={viewMode}/>
+              <DynamicMap
+                ads={ads}
+                filteredAdIds={filteredAdIds}
+                searchQuery={searchQuery}
+                hoveredAdId={hoveredAdId}
+                viewMode={viewMode}
+              />
             </div>
           </div>
         </div>

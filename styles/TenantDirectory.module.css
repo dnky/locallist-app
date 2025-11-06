@@ -98,30 +98,31 @@
 /* --- List/Map Layout --- */
 .listingsContainer {
   display: flex;
-  background-color: #fff; /* Give the container a background */
+  background-color: #fff;
 }
 
+/* --- FIX 1: Define the DESKTOP layout as the default --- */
 .listingsPanel {
-  width: 100%;
+  width: 65%; /* Default desktop width */
+  border-right: 1px solid #e6e6e6;
   flex-shrink: 0;
-  height: calc(100vh - 73px - 61px); /* vh - header - footer */
+  height: calc(100vh - 73px - 61px);
   overflow-y: auto;
 }
 
-/* MODIFIER: Desktop map view */
-.mapView .listingsPanel {
-  width: 65%;
-  border-right: 1px solid #e6e6e6;
-}
-
 .mapPanel {
-  width: 35%;
+  width: 35%; /* Default desktop width */
   position: sticky;
-  top: 73px; /* header height */
+  top: 73px;
   height: calc(100vh - 73px);
 }
+/* -------------------------------------------------------- */
 
-/* --- NEW STYLE FOR RESULTS COUNTER --- */
+
+/* MODIFIER: Desktop map view - This class is now only for mobile logic */
+/* .mapView class is still used in the component, but this CSS rule is removed */
+
+
 .resultsCounter {
   padding: 1.5rem 10px 0.5rem;
   font-size: 0.9rem;
@@ -129,9 +130,8 @@
   font-weight: 500;
 }
 
-/* --- Business Listing Cards (Desktop) --- */
 .businessListings {
-  padding-top: 0; /* Adjusted since counter has padding-top */
+  padding-top: 0;
 }
 
 .businessListing {
@@ -143,7 +143,7 @@
 }
 .businessListing:hover {
   background-color: #fdf5f5;
-  cursor: pointer; /* Give feedback that the whole div is clickable */
+  cursor: pointer;
 }
 
 .listingImage {
@@ -191,7 +191,7 @@
 }
 
 .listingContactMobile {
-  display: none; /* Hide on desktop */
+  display: none;
 }
 
 /* --- Footer --- */
@@ -208,13 +208,14 @@
 }
 
 /* --- Responsive Overrides --- */
+/* For TABLET view - stack them */
 @media (max-width: 992px) {
-  .mapView {
+  .listingsContainer { /* This already exists, but for clarity */
     flex-direction: column;
   }
-  .mapView .listingsPanel,
-  .mapView .mapPanel {
-    width: 100%;
+  .listingsPanel,
+  .mapPanel {
+    width: 100%; /* Override the 65/35 split */
   }
   .mapPanel {
     position: relative;
@@ -224,9 +225,11 @@
   .listingsPanel {
     height: auto;
     overflow-y: visible;
+    border-right: none; /* Remove border in stacked view */
   }
 }
 
+/* For MOBILE view - hide/show panels */
 @media (max-width: 768px) {
   .headerContent {
     flex-direction: column;
@@ -250,10 +253,10 @@
     font-size: 1rem;
     line-height: 1;
     cursor: pointer;
+    animation: throb 2s ease-in-out infinite;
   }
 
   .mapPanel { display: none; }
-  .mapView .listingsPanel { width: 100%; }
   
   .listingsPanel .container { padding: 0; }
   .businessListings { padding-top: 0; }
@@ -311,17 +314,21 @@
     width: 1em;
   }
   
-  /* MODIFIER: Mobile list view */
   .mobileListView .listingsPanel { display: block; }
   .mobileListView .mapPanel { display: none; }
 
-  /* MODIFIER: Mobile map view */
   .mobileMapView .listingsPanel { display: none; }
   .mobileMapView .mapPanel {
     display: block;
     position: relative;
     top: 0;
     width: 100%;
-    height: calc(100vh - 134px); /* Adjust based on your mobile header height */
+    height: calc(100vh - 134px);
   }
+}
+
+@keyframes throb {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
