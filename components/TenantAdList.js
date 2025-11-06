@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import dynamic from 'next/dynamic'; // <-- Import dynamic
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router'; // <-- 1. IMPORT useRouter
 
 // Dynamically import the map component with SSR turned off
 const DynamicMap = dynamic(() => import('./DynamicMap'), {
@@ -11,9 +12,15 @@ const DynamicMap = dynamic(() => import('./DynamicMap'), {
 export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
   console.log("[CLIENT_RECEIVED_PROPS] Ads received on initial load:", ads);
   
+  const router = useRouter(); // <-- 2. INITIALIZE the router
   const [viewMode, setViewMode] = useState('map');
   const [hoveredAdId, setHoveredAdId] = useState(null);
   const adsToDisplay = ads;
+
+  // --- 3. CREATE a navigation handler ---
+  const handleListingClick = (adId) => {
+    router.push(`/details?id=${adId}`);
+  };
 
   return (
     <>
@@ -23,6 +30,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
 
       <div id="main-wrapper">
         <header className="tenant-header">
+          {/* ...header code is unchanged... */}
           <div className="container">
             <div className="header-content">
               <Link href="/" className="tenant-logo">{tenantTitle}</Link>
@@ -32,7 +40,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                   onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
                   title="Toggle map view"
                 >
-                  {/* --- ICON CHANGES BASED ON VIEWMODE --- */}
                   <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
                 </button>
                 <div className="search-bar">
@@ -47,18 +54,18 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         </header>
 
         <div id="page-content-full-width">
-          {/* --- ADD NEW CLASS FOR MOBILE VIEW TOGGLING --- */}
           <div className={`listings-container ${viewMode === 'map' ? 'map-view' : ''} ${viewMode === 'map' ? 'mobile-map-view' : 'mobile-list-view'}`}>
             <div className="listings-panel">
               <div className="container">
                 <div className="business-listings">
                   {adsToDisplay.map(ad => (
-                    // The outer div is no longer a link itself
+                    // --- 4. MODIFIED: Add onClick for navigation ---
                     <div
                       className="business-listing"
                       key={ad.id}
                       onMouseEnter={() => setHoveredAdId(ad.id)}
                       onMouseLeave={() => setHoveredAdId(null)}
+                      onClick={() => handleListingClick(ad.id)} // This makes the whole div clickable
                     >
                       <div className="listing-image">
                         <img
@@ -67,17 +74,26 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                         />
                       </div>
                       <div className="listing-content">
-                        {/* The business name is now the primary link to the detail page */}
                         <h4>
-                          <Link href={`/details?id=${ad.id}`}>
-                            {ad.businessName}
-                          </Link>
+                          {/* The Link component is removed here to avoid nested links.
+                              The parent div's onClick handles navigation now. */}
+                          {ad.businessName}
                         </h4>
                         {ad.tags && <div className="listing-category"><span>{ad.tags.split(',')[0].trim()}</span></div>}
                         <p>{ad.description || 'Contact this business for more information.'}</p>
+                        
+                        {/* --- 5. MODIFIED: Removed links from mobile contact info --- */}
                         <div className="listing-contact-mobile">
-                          {ad.phone && (<a href={`tel:${ad.phone}`}><i className="fa-solid fa-phone"></i> {ad.phone}</a>)}
-                          {ad.email && (<a href={`mailto:${ad.email}`}><i className="fa-solid fa-envelope"></i> {ad.email}</a>)}
+                          {ad.phone && (
+                            <div className="contact-item"> {/* Changed from <a> to <div> */}
+                              <i className="fa-solid fa-phone"></i> {ad.phone}
+                            </div>
+                          )}
+                          {ad.email && (
+                            <div className="contact-item"> {/* Changed from <a> to <div> */}
+                              <i className="fa-solid fa-envelope"></i> {ad.email}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -87,12 +103,13 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
             </div>
 
             <div className="map-panel">
-              <DynamicMap ads={adsToDisplay} hoveredAdId={hoveredAdId} />
+              <DynamicMap ads={adsToDisplay} hoveredAdId={hoveredAdId} viewMode={viewMode}/>
             </div>
           </div>
         </div>
 
         <footer id="footer">
+          {/* ...footer code is unchanged... */}
           <div className="copyright">
             <div className="container">
               <p>Copyright {new Date().getFullYear()} © {tenantName}. All rights reserved.</p>
