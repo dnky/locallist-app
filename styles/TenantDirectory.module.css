@@ -1,0 +1,314 @@
+/* --- Tenant Page Color Theme & Font --- */
+.tenantPage {
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  background-color: #f7f7f7;
+
+  /* Yelp-inspired colors */
+  --tenant-primary-color: #d32323; /* Yelp Red */
+  --tenant-text-color: #2d2e2f;
+  --tenant-border-color: #ccc;
+  --tenant-light-gray: #f7f7f7;
+}
+
+.container {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) { .container { width: 750px; } }
+@media (min-width: 992px) { .container { width: 970px; } }
+@media (min-width: 1200px) { .container { width: 1170px; } }
+
+/* --- Base Header Styles (Desktop First) --- */
+.tenantHeader {
+  background-color: #fff;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e6e6e6;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.tenantLogo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--tenant-primary-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.btnMapMobile {
+  display: none; /* Hide on desktop by default */
+}
+
+.searchBar {
+  display: flex;
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.searchBar:focus-within {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--tenant-border-color);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchBar input:focus {
+  border-color: var(--tenant-primary-color);
+}
+
+.searchBar button {
+  padding: 0.75rem 1rem;
+  border: none;
+  background-color: var(--tenant-primary-color);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 0 4px 4px 0;
+  font-size: 1rem;
+}
+
+/* --- List/Map Layout --- */
+.listingsContainer {
+  display: flex;
+  background-color: #fff; /* Give the container a background */
+}
+
+.listingsPanel {
+  width: 100%;
+  flex-shrink: 0;
+  height: calc(100vh - 73px - 61px); /* vh - header - footer */
+  overflow-y: auto;
+}
+
+/* MODIFIER: Desktop map view */
+.mapView .listingsPanel {
+  width: 65%;
+  border-right: 1px solid #e6e6e6;
+}
+
+.mapPanel {
+  width: 35%;
+  position: sticky;
+  top: 73px; /* header height */
+  height: calc(100vh - 73px);
+}
+
+/* --- Business Listing Cards (Desktop) --- */
+.businessListings {
+  padding-top: 1.5rem;
+}
+
+.businessListing {
+  display: flex;
+  align-items: center;
+  padding: 20px 10px;
+  border-bottom: 1px solid #e5e5e5;
+  transition: background-color .2s ease;
+}
+.businessListing:hover {
+  background-color: #fdf5f5;
+  cursor: pointer; /* Give feedback that the whole div is clickable */
+}
+
+.listingImage {
+  width: 80px;
+  height: 80px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.listingImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.listingContent {
+  flex: 1;
+}
+
+.businessListing h4 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #0073bb;
+  text-decoration: none;
+}
+.businessListing:hover h4 {
+  text-decoration: underline;
+}
+
+.listingCategory {
+  font-size: 0.8rem;
+  color: #777;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.businessListing p {
+  margin-bottom: 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+.listingContactMobile {
+  display: none; /* Hide on desktop */
+}
+
+/* --- Footer --- */
+.footer .copyright {
+  position: relative;
+  padding: 30px 0;
+  background-color: #333;
+  font-size: 0.8rem;
+  color: #ccc;
+  text-transform: uppercase;
+}
+.footer .copyright p {
+  margin: 0;
+}
+
+/* --- Responsive Overrides --- */
+@media (max-width: 992px) {
+  .mapView {
+    flex-direction: column;
+  }
+  .mapView .listingsPanel,
+  .mapView .mapPanel {
+    width: 100%;
+  }
+  .mapPanel {
+    position: relative;
+    top: 0;
+    height: 400px;
+  }
+  .listingsPanel {
+    height: auto;
+    overflow-y: visible;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerContent {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .searchWrapper {
+    max-width: none;
+  }
+  
+  .btnMapMobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 1px solid var(--tenant-border-color);
+    color: var(--tenant-text-color);
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mapPanel { display: none; }
+  .mapView .listingsPanel { width: 100%; }
+  
+  .listingsPanel .container { padding: 0; }
+  .businessListings { padding-top: 0; }
+
+  .businessListing {
+    padding: 1rem 15px;
+    align-items: flex-start;
+  }
+
+  .listingImage {
+    width: 60px;
+    height: 60px;
+    margin-right: 15px;
+  }
+
+  .listingContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .businessListing h4 {
+    font-size: 1rem;
+    margin-bottom: 0;
+    line-height: 1.2;
+  }
+
+  .listingCategory,
+  .businessListing p {
+    display: none;
+  }
+
+  .listingContactMobile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .contactItem {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--tenant-text-color);
+    text-decoration: none;
+  }
+
+  .listingContactMobile i {
+    color: #888;
+    margin-right: 0.5rem;
+    width: 1em;
+  }
+  
+  /* MODIFIER: Mobile list view */
+  .mobileListView .listingsPanel { display: block; }
+  .mobileListView .mapPanel { display: none; }
+
+  /* MODIFIER: Mobile map view */
+  .mobileMapView .listingsPanel { display: none; }
+  .mobileMapView .mapPanel {
+    display: block;
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: calc(100vh - 134px); /* Adjust based on your mobile header height */
+  }
+}

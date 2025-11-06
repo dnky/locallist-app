@@ -1,0 +1,102 @@
+/* --- Landing Page Color Theme --- */
+.landingPage {
+    --primary-color: #002D62; /* Navy Blue */
+    --accent-color: #FF4F00;  /* Bright Orange */
+    --light-gray: #f4f6f9;
+    --dark-gray: #333333;
+    --text-color: #555555;
+    --white: #ffffff;
+    color: var(--text-color);
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.landingPage h1,
+.landingPage h2,
+.landingPage h3 {
+    color: var(--primary-color);
+    line-height: 1.2;
+    font-weight: 900;
+}
+
+.landingPage h1 { font-size: 2.8rem; }
+.landingPage h2 { font-size: 2.2rem; margin-bottom: 20px; text-align: center; }
+.landingPage p { margin-bottom: 1rem; }
+
+.landingPage section { padding: 60px 0; }
+.sectionLight { background-color: var(--white); }
+.sectionDark { background-color: var(--light-gray); }
+
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background-color: var(--accent-color);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover { background-color: #e64200; }
+
+.mainHeader {
+    background-color: var(--white);
+    padding: 20px 0;
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.mainHeader .container { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 1.5rem; font-weight: 900; color: var(--primary-color); text-decoration: none; }
+.logo .fa-newspaper { color: var(--accent-color); }
+
+#hero { background-color: var(--light-gray); padding: 50px 0; }
+.heroContent { display: flex; align-items: center; gap: 40px; }
+.heroText { flex: 1; }
+.subHeadline { font-size: 1.2rem; margin-bottom: 20px; }
+.heroText ul { list-style: none; padding-left: 0; }
+.heroText ul li { margin-bottom: 10px; font-size: 1.1rem; }
+.heroText ul li i { color: var(--accent-color); margin-right: 10px; }
+
+.contactFormCard { flex: 1; background: var(--white); padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.contactFormCard h3 { text-align: center; margin-bottom: 20px; }
+.formGroup { margin-bottom: 15px; }
+.formGroup label { display: block; margin-bottom: 5px; font-weight: 700; color: var(--dark-gray); }
+.formGroup input, .formGroup textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; font-family: 'Lato', sans-serif; }
+.formGroup textarea { resize: vertical; }
+
+.featuresGrid { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
+.featureCard { background: var(--white); text-align: center; padding: 30px 20px; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); flex-basis: 300px; transition: transform 0.3s ease; }
+.featureCard:hover { transform: translateY(-5px); }
+.featureCard .icon { font-size: 3rem; color: var(--primary-color); margin-bottom: 15px; }
+.featureCard h3 { font-size: 1.3rem; margin-bottom: 10px; }
+
+.stepsContainer { display: flex; justify-content: space-between; gap: 40px; margin-top: 40px; text-align: center; }
+.step { flex: 1; }
+.stepNumber { width: 60px; height: 60px; background: var(--accent-color); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; margin: 0 auto 20px auto; }
+.step h3 { margin-bottom: 10px; }
+
+.winWinContent { max-width: 800px; margin: 0 auto; text-align: center; }
+.mainFooter { background-color: var(--primary-color); color: var(--white); text-align: center; padding: 30px 0; }
+.mainFooter p { margin: 0; }
+
+@media (max-width: 992px) {
+    .heroContent { flex-direction: column; }
+    .heroText { text-align: center; margin-bottom: 30px; }
+}
+@media (max-width: 768px) {
+    .landingPage h1 { font-size: 2.2rem; }
+    .landingPage h2 { font-size: 1.8rem; }
+    .stepsContainer { flex-direction: column; gap: 50px; }
+    .mainHeader .container { flex-direction: column; gap: 10px; }
+}

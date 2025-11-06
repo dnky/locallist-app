@@ -2,7 +2,8 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/router'; // <-- 1. IMPORT useRouter
+import { useRouter } from 'next/router';
+import styles from '../styles/TenantDirectory.module.css';
 
 // Dynamically import the map component with SSR turned off
 const DynamicMap = dynamic(() => import('./DynamicMap'), {
@@ -10,17 +11,21 @@ const DynamicMap = dynamic(() => import('./DynamicMap'), {
 });
 
 export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
-  console.log("[CLIENT_RECEIVED_PROPS] Ads received on initial load:", ads);
-  
-  const router = useRouter(); // <-- 2. INITIALIZE the router
+  const router = useRouter();
   const [viewMode, setViewMode] = useState('map');
   const [hoveredAdId, setHoveredAdId] = useState(null);
   const adsToDisplay = ads;
 
-  // --- 3. CREATE a navigation handler ---
   const handleListingClick = (adId) => {
     router.push(`/details?id=${adId}`);
   };
+
+  // Helper to combine CSS module class names
+  const listingsContainerClasses = [
+    styles.listingsContainer,
+    viewMode === 'map' ? styles.mapView : '',
+    viewMode === 'map' ? styles.mobileMapView : styles.mobileListView
+  ].join(' ');
 
   return (
     <>
@@ -28,21 +33,20 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         <title>{tenantTitle}</title>
       </Head>
 
-      <div id="main-wrapper">
-        <header className="tenant-header">
-          {/* ...header code is unchanged... */}
-          <div className="container">
-            <div className="header-content">
-              <Link href="/" className="tenant-logo">{tenantTitle}</Link>
-              <div className="search-wrapper">
+      <div className={styles.tenantPage}>
+        <header className={styles.tenantHeader}>
+          <div className={styles.container}>
+            <div className={styles.headerContent}>
+              <Link href="/" className={styles.tenantLogo}>{tenantTitle}</Link>
+              <div className={styles.searchWrapper}>
                 <button
-                  className="btn-map-mobile"
+                  className={styles.btnMapMobile}
                   onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
                   title="Toggle map view"
                 >
                   <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
                 </button>
-                <div className="search-bar">
+                <div className={styles.searchBar}>
                   <input type="text" placeholder="Search businesses..." />
                   <button type="submit">
                     <i className="fa-solid fa-search"></i>
@@ -54,43 +58,37 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         </header>
 
         <div id="page-content-full-width">
-          <div className={`listings-container ${viewMode === 'map' ? 'map-view' : ''} ${viewMode === 'map' ? 'mobile-map-view' : 'mobile-list-view'}`}>
-            <div className="listings-panel">
-              <div className="container">
-                <div className="business-listings">
+          <div className={listingsContainerClasses}>
+            <div className={styles.listingsPanel}>
+              <div className={styles.container}>
+                <div className={styles.businessListings}>
                   {adsToDisplay.map(ad => (
-                    // --- 4. MODIFIED: Add onClick for navigation ---
                     <div
-                      className="business-listing"
+                      className={styles.businessListing}
                       key={ad.id}
                       onMouseEnter={() => setHoveredAdId(ad.id)}
                       onMouseLeave={() => setHoveredAdId(null)}
-                      onClick={() => handleListingClick(ad.id)} // This makes the whole div clickable
+                      onClick={() => handleListingClick(ad.id)}
                     >
-                      <div className="listing-image">
+                      <div className={styles.listingImage}>
                         <img
                           src={ad.logoSrc ? `/${tenantDomain}/${ad.logoSrc}` : 'https://via.placeholder.com/80'}
                           alt={`${ad.businessName} logo`}
                         />
                       </div>
-                      <div className="listing-content">
-                        <h4>
-                          {/* The Link component is removed here to avoid nested links.
-                              The parent div's onClick handles navigation now. */}
-                          {ad.businessName}
-                        </h4>
-                        {ad.tags && <div className="listing-category"><span>{ad.tags.split(',')[0].trim()}</span></div>}
+                      <div className={styles.listingContent}>
+                        <h4>{ad.businessName}</h4>
+                        {ad.tags && <div className={styles.listingCategory}><span>{ad.tags.split(',')[0].trim()}</span></div>}
                         <p>{ad.description || 'Contact this business for more information.'}</p>
                         
-                        {/* --- 5. MODIFIED: Removed links from mobile contact info --- */}
-                        <div className="listing-contact-mobile">
+                        <div className={styles.listingContactMobile}>
                           {ad.phone && (
-                            <div className="contact-item"> {/* Changed from <a> to <div> */}
+                            <div className={styles.contactItem}>
                               <i className="fa-solid fa-phone"></i> {ad.phone}
                             </div>
                           )}
                           {ad.email && (
-                            <div className="contact-item"> {/* Changed from <a> to <div> */}
+                            <div className={styles.contactItem}>
                               <i className="fa-solid fa-envelope"></i> {ad.email}
                             </div>
                           )}
@@ -102,16 +100,15 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
               </div>
             </div>
 
-            <div className="map-panel">
+            <div className={styles.mapPanel}>
               <DynamicMap ads={adsToDisplay} hoveredAdId={hoveredAdId} viewMode={viewMode}/>
             </div>
           </div>
         </div>
 
-        <footer id="footer">
-          {/* ...footer code is unchanged... */}
-          <div className="copyright">
-            <div className="container">
+        <footer id="footer" className={styles.footer}>
+          <div className={styles.copyright}>
+            <div className={styles.container}>
               <p>Copyright {new Date().getFullYear()} © {tenantName}. All rights reserved.</p>
             </div>
           </div>

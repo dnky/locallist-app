@@ -1,19 +1,9 @@
 import '../styles/globals.css';
 
-function MyApp({ Component, pageProps, router }) {
-  let pageClass = '';
-
-  if (router.pathname === '/landing') {
-    pageClass = 'landing-page-style';
-  } else if (
-    router.pathname === '/' ||
-    router.pathname.startsWith('/[') ||
-    router.pathname.startsWith('/details') // <-- ADD THIS CONDITION
-  ) {
-    pageClass = 'tenant-page-style';
-  }
-
-  return <Component {...pageProps} pageClass={pageClass} />;
+function MyApp({ Component, pageProps }) {
+  // The pageClass logic is no longer needed.
+  // Styles are now imported and scoped directly within each component/page.
+  return <Component {...pageProps} />;
 }
 
 export default MyApp;
