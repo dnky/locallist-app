@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -14,7 +14,34 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   const router = useRouter();
   const [viewMode, setViewMode] = useState('map');
   const [hoveredAdId, setHoveredAdId] = useState(null);
-  const adsToDisplay = ads;
+
+  // --- NEW STATE FOR SEARCH ---
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredAds, setFilteredAds] = useState(ads);
+  // ----------------------------
+
+  // --- NEW EFFECT FOR FILTERING ---
+  useEffect(() => {
+    const lowercasedQuery = searchQuery.toLowerCase();
+
+    if (!lowercasedQuery) {
+      setFilteredAds(ads); // If search is empty, show all ads
+    } else {
+      const results = ads.filter(ad => {
+        // Check if the query exists in any of the specified fields
+        const nameMatch = ad.businessName?.toLowerCase().includes(lowercasedQuery);
+        const tagsMatch = ad.tags?.toLowerCase().includes(lowercasedQuery);
+        const descMatch = ad.description?.toLowerCase().includes(lowercasedQuery);
+        const phoneMatch = ad.phone?.toLowerCase().includes(lowercasedQuery);
+        const emailMatch = ad.email?.toLowerCase().includes(lowercasedQuery);
+        const webMatch = ad.web?.toLowerCase().includes(lowercasedQuery);
+        
+        return nameMatch || tagsMatch || descMatch || phoneMatch || emailMatch || webMatch;
+      });
+      setFilteredAds(results);
+    }
+  }, [searchQuery, ads]);
+  // ---------------------------------
 
   const handleListingClick = (adId) => {
     router.push(`/details?id=${adId}`);
@@ -47,8 +74,14 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                   <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
                 </button>
                 <div className={styles.searchBar}>
-                  <input type="text" placeholder="Search businesses..." />
-                  <button type="submit">
+                  {/* MODIFIED INPUT */}
+                  <input
+                    type="text"
+                    placeholder="Search businesses..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <button type="button"> {/* Changed from submit to button */}
                     <i className="fa-solid fa-search"></i>
                   </button>
                 </div>
@@ -61,8 +94,14 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
           <div className={listingsContainerClasses}>
             <div className={styles.listingsPanel}>
               <div className={styles.container}>
+                {/* NEW: RESULTS COUNTER */}
+                <div className={styles.resultsCounter}>
+                  Showing {filteredAds.length} of {ads.length} businesses
+                </div>
+
                 <div className={styles.businessListings}>
-                  {adsToDisplay.map(ad => (
+                  {/* MODIFIED: Use filteredAds to render the list */}
+                  {filteredAds.map(ad => (
                     <div
                       className={styles.businessListing}
                       key={ad.id}
@@ -101,7 +140,8 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
             </div>
 
             <div className={styles.mapPanel}>
-              <DynamicMap ads={adsToDisplay} hoveredAdId={hoveredAdId} viewMode={viewMode}/>
+              {/* MODIFIED: Pass filteredAds to the map */}
+              <DynamicMap ads={filteredAds} hoveredAdId={hoveredAdId} viewMode={viewMode}/>
             </div>
           </div>
         </div>

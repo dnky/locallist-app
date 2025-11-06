@@ -121,9 +121,17 @@
   height: calc(100vh - 73px);
 }
 
+/* --- NEW STYLE FOR RESULTS COUNTER --- */
+.resultsCounter {
+  padding: 1.5rem 10px 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+}
+
 /* --- Business Listing Cards (Desktop) --- */
 .businessListings {
-  padding-top: 1.5rem;
+  padding-top: 0; /* Adjusted since counter has padding-top */
 }
 
 .businessListing {
@@ -249,6 +257,11 @@
   
   .listingsPanel .container { padding: 0; }
   .businessListings { padding-top: 0; }
+  
+  .resultsCounter {
+    padding: 1rem 15px 0.5rem;
+    border-bottom: 1px solid #e5e5e5;
+  }
 
   .businessListing {
     padding: 1rem 15px;
