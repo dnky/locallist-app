@@ -1,12 +1,11 @@
+// components/DynamicMap.js
+
 import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import Link from 'next/link';
 
-// ======================= THE DEFINITIVE FIX =======================
-// This code block explicitly sets the paths for Leaflet's default icon images.
-// It points to a public CDN (unpkg) to ensure the images are always found,
-// regardless of the build environment. This fixes the "invisible marker" bug.
+// Icon fix remains the same and is crucial
 delete L.Icon.Default.prototype._getIconUrl;
 
 L.Icon.Default.mergeOptions({
@@ -14,13 +13,37 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
+
+// ======================= NEW HELPER COMPONENT =======================
+// This component uses the `useMap` hook to get the map instance
+// and applies effects to it, like fitting bounds.
+function MapEffect({ ads, viewMode }) {
+  const map = useMap(); // This hook gives us access to the map instance
+
+  // Effect for fitting bounds on load or when ads change
+  useEffect(() => {
+    if (ads && ads.length > 0) {
+      const bounds = L.latLngBounds(ads.map(ad => [ad.lat, ad.lng]));
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [ads, map]);
+
+  // Effect for handling map resizing on mobile view toggle
+  useEffect(() => {
+    if (viewMode === 'map') {
+      // A small delay ensures the map container has resized before invalidating
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
+    }
+  }, [viewMode, map]);
+
+  return null; // This component does not render any visible JSX
+}
 // ====================================================================
 
 export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
-  console.log("[MAP_PROPS] Ads received by map:", ads);  
-
   const markerRefs = useRef({});
-  const mapRef = useRef(null);
 
   // Effect to handle hover highlighting (remains the same)
   useEffect(() => {
@@ -32,29 +55,20 @@ export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
     }
   }, [hoveredAdId]);
 
-  // Effect to handle resizing on mobile (remains the same)
-  useEffect(() => {
-    if (viewMode === 'map' && mapRef.current) {
-      setTimeout(() => {
-        mapRef.current.invalidateSize();
-      }, 100);
-    }
-  }, [viewMode]);
-
   const adsWithCoords = ads.filter(ad => ad.lat && ad.lng);
   
-  console.log(`[MAP_FILTER] Found ${adsWithCoords.length} ads with coordinates.`);
-  
-  const mapCenter = adsWithCoords.length > 0
-    ? [adsWithCoords[0].lat, adsWithCoords[0].lng]
-    : [51.505, -0.09];
+  // A default center in case there are no ads with coordinates.
+  const mapCenter = [51.505, -0.09];
 
   return (
-    <MapContainer ref={mapRef} center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
+    // We no longer need the `ref` here.
+    <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
+      
+      {/* Render the markers as before */}
       {adsWithCoords.map(ad => (
         <Marker
           key={ad.id}
@@ -62,7 +76,6 @@ export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
           ref={el => (markerRefs.current[ad.id] = el)}
           eventHandlers={{
             mouseover: (event) => {
-              // Highlight the marker on hover
               event.target.setZIndexOffset(1000);
               event.target.openPopup();
             },
@@ -71,8 +84,6 @@ export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
               event.target.closePopup();
             },
           }}
-          // We no longer need a custom icon function. The default icon is now fixed.
-          // We'll add a class for highlighting via CSS instead.
           className={ad.id === hoveredAdId ? 'marker-highlighted' : ''}
         >
           <Popup>
@@ -84,6 +95,9 @@ export default function DynamicMap({ ads, hoveredAdId, viewMode }) {
           </Popup>
         </Marker>
       ))}
+
+      {/* NEW: Add our MapEffect component as a child of MapContainer */}
+      <MapEffect ads={adsWithCoords} viewMode={viewMode} />
     </MapContainer>
   );
 }
