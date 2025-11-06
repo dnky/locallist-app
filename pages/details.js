@@ -40,19 +40,41 @@ export default function AdDetailPage({ ad, tenant }) {
           <div className={styles.detailHeader}>
             <h1>{ad.businessName}</h1>
             {ad.tags && <p className={styles.detailCategory}>{ad.tags.split(',')[0].trim()}</p>}
-
-            <div className={styles.detailActionsMobile}>
-              {ad.phone && <a href={`tel:${ad.phone}`} className={styles.btnActionIcon} aria-label="Call"><i className="fa-solid fa-phone"></i></a>}
-              {ad.email && <a href={`mailto:${ad.email}`} className={styles.btnActionIcon} aria-label="Email"><i className="fa-solid fa-envelope"></i></a>}
-              {ad.web && <a href={ad.web} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Website"><i className="fa-solid fa-globe"></i></a>}
-              {ad.lat && ad.lng && <a href={`https://www.google.com/maps/dir/?api=1&destination=${ad.lat},${ad.lng}`} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Directions"><i className="fa-solid fa-diamond-turn-right"></i></a>}
-            </div>
           </div>
 
           <div className={styles.photoGalleryPlaceholder}>
             <i className="fa-solid fa-camera"></i>
             <span>Photo Gallery Coming Soon</span>
           </div>
+
+          {/* --- MODIFIED MOBILE ACTION BUTTONS --- */}
+            <div className={styles.detailActionsMobile}>
+              {ad.phone && (
+                <a href={`tel:${ad.phone}`} className={styles.btnActionIcon} aria-label="Call">
+                  <i className="fa-solid fa-phone"></i>
+                  <span>Call</span>
+                </a>
+              )}
+              {ad.email && (
+                <a href={`mailto:${ad.email}`} className={styles.btnActionIcon} aria-label="Email">
+                  <i className="fa-solid fa-envelope"></i>
+                  <span>Email</span>
+                </a>
+              )}
+              {ad.web && (
+                <a href={ad.web} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Website">
+                  <i className="fa-solid fa-globe"></i>
+                  <span>Website</span>
+                </a>
+              )}
+              {ad.lat && ad.lng && (
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${ad.lat},${ad.lng}`} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Directions">
+                  <i className="fa-solid fa-diamond-turn-right"></i>
+                  <span>Directions</span>
+                </a>
+              )}
+            </div>
+            {/* -------------------------------------- */}
           
           <div className={styles.detailContentWrapper}>
             <div className={styles.detailMainContent}>
@@ -85,6 +107,7 @@ export default function AdDetailPage({ ad, tenant }) {
   );
 }
 
+// getServerSideProps remains unchanged
 export async function getServerSideProps(context) {
   const { id } = context.query;
   if (!id) {

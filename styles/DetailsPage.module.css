@@ -48,8 +48,8 @@
 /* --- Detail Page Specific Styles --- */
 .detailMainContainer {
   max-width: 1100px;
-  margin: 1rem auto;
-  padding: 0 15px;
+  margin: 0.7rem auto;
+  padding: 0;
 }
 
 .detailHeader {
@@ -65,6 +65,7 @@
 .detailHeader .detailCategory {
   font-size: 1rem;
   color: #777;
+  padding: 0 15px;
 }
 
 .photoGalleryPlaceholder {
@@ -78,7 +79,6 @@
   color: #6c757d;
   font-size: 1.2rem;
   border-radius: 4px;
-  margin-bottom: 2rem;
 }
 
 .detailContentWrapper {
@@ -153,33 +153,46 @@
   color: #6c757d;
 }
 
+/* ================== NEW MOBILE ACTION BUTTON STYLES ================== */
 .detailActionsMobile {
-  display: none;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  display: none; /* Hidden on desktop by default */
+  width: 100%;
+  justify-content: flex-start; /* Aligns items to the left */
+  align-items: flex-start;
   margin-bottom: 0.5rem;
+  padding: 0.5rem 0;
+  background-color: #fff;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .btnActionIcon {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: var(--tenant-primary-color);
-  color: #fff;
-  font-size: 1.2rem;
+  flex-basis: 25%; /* Each takes up 1/4 of the width */
+  max-width: 25%;
+  color: var(--tenant-primary-color);
+  font-size: 1.5rem; /* Larger icon */
   text-decoration: none;
-  border: 2px solid var(--tenant-primary-color);
-  transition: all 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+  padding: 0.5rem 0.25rem;
+}
+
+.btnActionIcon span {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--tenant-text-color);
+  text-align: center;
 }
 
 .btnActionIcon:hover {
-  background-color: #fff;
-  color: var(--tenant-primary-color);
+  opacity: 0.7;
 }
+/* ====================================================================== */
+
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
@@ -188,6 +201,7 @@
   }
   .detailHeader h1 {
     font-size: 1.5rem;
+    padding: 0 15px;
   }
   .detailActionsMobile {
     display: flex;
