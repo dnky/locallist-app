@@ -26,6 +26,9 @@
   background-color: #fff;
   padding: 1rem 0;
   border-bottom: 1px solid #e6e6e6;
+}
+
+.sticky {
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -38,6 +41,11 @@
   gap: 2rem;
 }
 
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+}
+
 .tenantLogo {
   font-size: 1.75rem;
   font-weight: 700;
@@ -46,21 +54,27 @@
   white-space: nowrap;
 }
 
+.headerSubheading {
+  font-size: 10px;
+  margin-top: -3px;
+  color: #777;
+}
+
 .searchWrapper {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  width: 100%;
+  flex-grow: 1; /* FIX PART 1: Allows this wrapper to fill space */
   max-width: 600px;
 }
 
 .btnMapMobile {
-  display: none; /* Hide on desktop by default */
+  display: none;
 }
 
 .searchBar {
   display: flex;
-  width: 100%;
+  width: 100%; /* FIX PART 2: Makes the search bar fill its parent wrapper */
   border-radius: 4px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.2s ease-in-out;
@@ -101,27 +115,20 @@
   background-color: #fff;
 }
 
-/* --- FIX 1: Define the DESKTOP layout as the default --- */
 .listingsPanel {
-  width: 65%; /* Default desktop width */
+  width: 65%;
   border-right: 1px solid #e6e6e6;
   flex-shrink: 0;
-  height: calc(100vh - 73px - 61px);
+  height: calc(100vh - 86px - 61px);
   overflow-y: auto;
 }
 
 .mapPanel {
-  width: 35%; /* Default desktop width */
+  width: 35%;
   position: sticky;
-  top: 73px;
-  height: calc(100vh - 73px);
+  top: 86px;
+  height: calc(100vh - 86px);
 }
-/* -------------------------------------------------------- */
-
-
-/* MODIFIER: Desktop map view - This class is now only for mobile logic */
-/* .mapView class is still used in the component, but this CSS rule is removed */
-
 
 .resultsCounter {
   padding: 1.5rem 10px 0.5rem;
@@ -208,14 +215,13 @@
 }
 
 /* --- Responsive Overrides --- */
-/* For TABLET view - stack them */
 @media (max-width: 992px) {
-  .listingsContainer { /* This already exists, but for clarity */
+  .listingsContainer {
     flex-direction: column;
   }
   .listingsPanel,
   .mapPanel {
-    width: 100%; /* Override the 65/35 split */
+    width: 100%;
   }
   .mapPanel {
     position: relative;
@@ -225,11 +231,10 @@
   .listingsPanel {
     height: auto;
     overflow-y: visible;
-    border-right: none; /* Remove border in stacked view */
+    border-right: none;
   }
 }
 
-/* For MOBILE view - hide/show panels */
 @media (max-width: 768px) {
   .headerContent {
     flex-direction: column;
@@ -323,7 +328,7 @@
     position: relative;
     top: 0;
     width: 100%;
-    height: calc(100vh - 134px);
+    height: calc(100vh - 157px);
   }
 }
 

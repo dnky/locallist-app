@@ -1,3 +1,5 @@
+/* styles/DetailsPage.module.css */
+
 /* --- Tenant Page Color Theme & Font --- */
 .detailPage {
   font-family: 'Poppins', sans-serif;
@@ -21,32 +23,6 @@
 @media (min-width: 992px) { .container { width: 970px; } }
 @media (min-width: 1200px) { .container { width: 1170px; } }
 
-/* --- Header --- */
-.tenantHeader {
-  background-color: #fff;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #e6e6e6;
-}
-
-.headerSubheading {
-  font-size: 14px;
-  margin-top: -3px;
-}
-
-.headerContent {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.tenantLogo {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--tenant-primary-color);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
 /* --- Detail Page Specific Styles --- */
 .detailMainContainer {
   max-width: 1100px;
@@ -56,7 +32,7 @@
 
 .detailHeader {
   position: sticky;
-  top: 0;
+  top: 0; 
   z-index: 900;
   padding: 0.7rem 15px 0;
   background-color: var(--tenant-light-gray);
@@ -69,7 +45,6 @@
   line-height: 1.2;
 }
 
-/* ================== NEW STYLES ================== */
 .categoryWrapper {
   display: flex;
   align-items: center;
@@ -78,52 +53,39 @@
   margin: 0 0 0.8rem 0;
 }
 
-.backButton {
-  /* Reset */
-  border: 1px solid var(--tenant-border-color);
-  background-color: #fff;
-  padding: 0;
-  cursor: pointer;
-
-  /* Shape & Size */
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  flex-shrink: 0; /* Prevents button from shrinking */
-
-  /* Icon Centering */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  /* Icon Appearance */
-  color: var(--tenant-text-color);
-  font-size: 0.9rem;
-  
-  /* Effects */
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.backButton:hover {
-  background-color: #f0f0f0;
-  border-color: #aaa;
-}
-
 .detailCategory {
   font-size: 1rem;
   color: #777;
   padding: 0;
   margin: 0;
 }
-/* ================================================ */
+
+/* --- ADD THESE NEW STYLES --- */
+.photoGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 0 15px;
+}
+
+.photoGallery img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: #e9ecef;
+}
+/* -------------------------- */
+
 
 .photoGalleryPlaceholder {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  width: 100%;
+  width: auto;
+  margin: 0 15px 2rem 15px; /* Adjust margin */
   height: 300px;
   background-color: #e9ecef;
   color: #6c757d;
@@ -176,7 +138,6 @@
   opacity: 0.9;
 }
 
-/* MODIFIER CLASSES */
 .btnWebsite {
   background-color: var(--tenant-primary-color);
   border-color: var(--tenant-primary-color);
@@ -242,7 +203,6 @@
   opacity: 0.7;
 }
 
-/* --- Responsive --- */
 @media (max-width: 768px) {
   .detailContentWrapper {
     flex-direction: column;
@@ -257,4 +217,11 @@
   .sidebarActions {
     display: none;
   }
+  
+  /* --- ADD THIS --- */
+  .photoGallery {
+    padding: 0;
+    margin: 0 15px 1.5rem 15px;
+  }
+  /* -------------- */
 }

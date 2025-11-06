@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +12,7 @@ datasource db {
 model Tenant {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  title     String?   // <-- ADD THIS LINE
+  title     String?
   domain    String   @unique
   createdAt DateTime @default(now()) @db.Timestamptz
   ads       Ad[]
@@ -21,7 +23,7 @@ model Ad {
   tenantId     String    @db.Uuid
   businessName String
   description  String?
-  imageSrc     String
+  imageSrc     String // This can now be a "cover image"
   logoSrc      String?
   phone        String?
   email        String?
@@ -33,4 +35,15 @@ model Ad {
   lng          Float?
   createdAt    DateTime  @default(now()) @db.Timestamptz
   tenant       Tenant    @relation(fields: [tenantId], references: [id])
+  images       Image[]   // <-- ADD RELATION TO IMAGES
+}
+
+// --- ADD THIS NEW MODEL ---
+model Image {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adId      String   @db.Uuid
+  url       String   // The public URL of the image in Supabase Storage
+  altText   String?  // Good for accessibility
+  createdAt DateTime @default(now()) @db.Timestamptz
+  ad        Ad       @relation(fields: [adId], references: [id])
 }

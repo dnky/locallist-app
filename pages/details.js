@@ -1,9 +1,12 @@
+// pages/details.js
+
 import Head from 'next/head';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import prisma from '../lib/prisma';
 import { useRouter } from 'next/router';
 import styles from '../styles/DetailsPage.module.css';
+import SharedHeader from '../components/SharedHeader';
+import Link from 'next/link'; // Import Link
 
 const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
   ssr: false
@@ -30,14 +33,10 @@ export default function AdDetailPage({ ad, tenant }) {
         <title>{ad.businessName} - {tenant.title}</title>
       </Head>
 
-      <header className={styles.tenantHeader}>
-        <div className={styles.container}>
-          <div className={styles.headerContent}>
-            <Link href={`/`} className={styles.tenantLogo}>{tenant.title}</Link>
-          </div>
-          <p className={styles.headerSubheading}>You trusted local business directory</p>
-        </div>
-      </header>
+      <SharedHeader 
+        title={tenant.title} 
+        subheading="Your trusted local business directory"
+      />
 
       <main className={styles.detailMainContainer}>
         <div className={styles.detailHeader}>
@@ -45,18 +44,29 @@ export default function AdDetailPage({ ad, tenant }) {
         </div>
 
         <div className={styles.categoryWrapper}>
-          {/*<button onClick={() => router.back()} className={styles.backButton} aria-label="Go back">
-            <i className="fa-solid fa-arrow-left"></i>
-          </button>*/}
           {ad.tags && <p className={styles.detailCategory}>{ad.tags.split(',')[0].trim()}</p>}
         </div>
 
-        <div className={styles.photoGalleryPlaceholder}>
-          <i className="fa-solid fa-camera"></i>
-          <span>Photo Gallery Coming Soon</span>
-        </div>
+        {/* --- THIS IS THE NEW PHOTO GALLERY --- */}
+        {ad.images && ad.images.length > 0 ? (
+          <div className={styles.photoGallery}>
+            {ad.images.map(image => (
+              <img 
+                key={image.id} 
+                src={image.url} 
+                alt={image.altText || `Photo for ${ad.businessName}`} 
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.photoGalleryPlaceholder}>
+            <i className="fa-solid fa-camera"></i>
+            <span>Photo Gallery Coming Soon</span>
+          </div>
+        )}
+        {/* ------------------------------------- */}
 
-        {/* --- MODIFIED MOBILE ACTION BUTTONS --- */}
+
         <div className={styles.detailActionsMobile}>
           {ad.phone && (
             <a href={`tel:${ad.phone}`} className={styles.btnActionIcon} aria-label="Call">
@@ -83,7 +93,6 @@ export default function AdDetailPage({ ad, tenant }) {
             </a>
           )}
         </div>
-        {/* -------------------------------------- */}
         
         <div className={styles.detailContentWrapper}>
           <div className={styles.detailMainContent}>
@@ -115,7 +124,6 @@ export default function AdDetailPage({ ad, tenant }) {
   );
 }
 
-// getServerSideProps remains unchanged
 export async function getServerSideProps(context) {
   const { id } = context.query;
   if (!id) {
@@ -124,8 +132,13 @@ export async function getServerSideProps(context) {
   try {
     const ad = await prisma.ad.findUnique({
       where: { id: String(id) },
-      include: { tenant: true },
+      // --- THIS IS THE KEY CHANGE ---
+      include: { 
+        tenant: true,
+        images: true // Include all related images for this ad
+      },
     });
+    // ----------------------------
     if (!ad) {
       return { notFound: true };
     }

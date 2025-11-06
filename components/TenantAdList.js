@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import styles from '../styles/TenantDirectory.module.css';
+import SharedHeader from './SharedHeader';
 
-// Dynamically import the map component with SSR turned off
 const DynamicMap = dynamic(() => import('./DynamicMap'), {
   ssr: false
 });
 
 export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
   const router = useRouter();
-  // --- CHANGE 1: Default to 'list' view ---
   const [viewMode, setViewMode] = useState('list');
   const [hoveredAdId, setHoveredAdId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,33 +55,32 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       </Head>
 
       <div className={styles.tenantPage}>
-        <header className={styles.tenantHeader}>
-          <div className={styles.container}>
-            <div className={styles.headerContent}>
-              <Link href="/" className={styles.tenantLogo}>{tenantTitle}</Link>
-              <div className={styles.searchWrapper}>
-                <button
-                  className={styles.btnMapMobile}
-                  onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-                  title="Toggle map view"
-                >
-                  <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
-                </button>
-                <div className={styles.searchBar}>
-                  <input
-                    type="text"
-                    placeholder="Search businesses..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <button type="button">
-                    <i className="fa-solid fa-search"></i>
-                  </button>
-                </div>
-              </div>
+        <SharedHeader 
+          title={tenantTitle} 
+          subheading="Your trusted local business directory"
+          isSticky={true} 
+        >
+          <div className={styles.searchWrapper}>
+            <button
+              className={styles.btnMapMobile}
+              onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+              title="Toggle map view"
+            >
+              <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
+            </button>
+            <div className={styles.searchBar}>
+              <input
+                type="text"
+                placeholder="Search businesses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="button">
+                <i className="fa-solid fa-search"></i>
+              </button>
             </div>
           </div>
-        </header>
+        </SharedHeader>
 
         <div id="page-content-full-width">
           <div className={listingsContainerClasses}>
