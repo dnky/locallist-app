@@ -90,8 +90,8 @@
   flex: 2; /* Takes up 2/3 of the space */
 }
 .detailMainContent h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
 }
 .detailMainContent .detailDescription {
   line-height: 1.7;
@@ -197,7 +197,8 @@
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .detailContentWrapper {
-    flex-direction: column-reverse;
+    flex-direction: column;
+    padding: 10px 15px;
   }
   .detailHeader h1 {
     font-size: 1.5rem;
