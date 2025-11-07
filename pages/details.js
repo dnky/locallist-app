@@ -47,8 +47,9 @@ export default function AdDetailPage({ ad, tenant }) {
           {ad.tags && <p className={styles.detailCategory}>{ad.tags.split(',')[0].trim()}</p>}
         </div>
 
-        {/* --- THIS IS THE NEW PHOTO GALLERY --- */}
-        {ad.images && ad.images.length > 0 ? (
+        {/* --- THIS IS THE FIX --- */}
+        {/* The entire gallery block is now conditional */}
+        {ad.images && ad.images.length > 0 && (
           <div className={styles.photoGallery}>
             {ad.images.map(image => (
               <img 
@@ -58,13 +59,8 @@ export default function AdDetailPage({ ad, tenant }) {
               />
             ))}
           </div>
-        ) : (
-          <div className={styles.photoGalleryPlaceholder}>
-            <i className="fa-solid fa-camera"></i>
-            <span>Photo Gallery Coming Soon</span>
-          </div>
         )}
-        {/* ------------------------------------- */}
+        {/* ----------------------- */}
 
 
         <div className={styles.detailActionsMobile}>

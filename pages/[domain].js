@@ -18,7 +18,7 @@ export default function DomainPage(props) {
 }
 
 
-// ... getServerSideProps remains unchanged
+// ... getServerSideProps is updated
 export async function getServerSideProps(context) {
   const { domain } = context.params;
 
@@ -39,16 +39,25 @@ export async function getServerSideProps(context) {
       },
       include: {
         tenant: true,
+        images: {
+          take: 1,
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
     
-    const plainAds = JSON.parse(JSON.stringify(adsFromDb));
-
-    const serializableAds = plainAds.map(ad => ({
-      ...ad,
-      lat: ad.lat ? parseFloat(ad.lat) : null,
-      lng: ad.lng ? parseFloat(ad.lng) : null,
-    }));
+    // --- THIS IS THE FIX ---
+    // We destructure 'images' out of the ad object and spread the 'rest'
+    const serializableAds = JSON.parse(JSON.stringify(adsFromDb)).map(ad => {
+      const { images, ...restOfAd } = ad;
+      return {
+        ...restOfAd,
+        lat: ad.lat ? parseFloat(ad.lat) : null,
+        lng: ad.lng ? parseFloat(ad.lng) : null,
+        firstImageUrl: images && images.length > 0 ? images[0].url : null,
+      };
+    });
+    // ----------------------
 
     const allTags = new Set();
     adsFromDb.forEach(ad => {

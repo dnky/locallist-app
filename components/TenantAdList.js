@@ -102,10 +102,14 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                       onClick={() => handleListingClick(ad.id)}
                     >
                       <div className={styles.listingImage}>
-                        <img
-                          src={ad.logoSrc ? `/${tenantDomain}/${ad.logoSrc}` : 'https://via.placeholder.com/80'}
-                          alt={`${ad.businessName} logo`}
-                        />
+                        {/* --- THIS IS THE KEY CHANGE --- */}
+                        {/* Only render the image if a source exists */}
+                        {(ad.firstImageUrl || ad.logoSrc) && (
+                          <img
+                            src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
+                            alt={`Image for ${ad.businessName}`}
+                          />
+                        )}
                       </div>
                       <div className={styles.listingContent}>
                         <h4>{ad.businessName}</h4>

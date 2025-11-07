@@ -18,7 +18,7 @@ export default function IndexPage(props) {
   );
 }
 
-// ... getServerSideProps remains unchanged
+// ... getServerSideProps is updated
 export async function getServerSideProps(context) {
   const host = context.req.headers.host; 
   console.log(`[SERVER LOG] Request for host: ${host}`);
@@ -30,22 +30,28 @@ export async function getServerSideProps(context) {
       return { notFound: true };
     }
 
-    const adsFromDb = await prisma.ad.findMany({ where: { tenantId: tenant.id } });
+    const adsFromDb = await prisma.ad.findMany({
+      where: { tenantId: tenant.id },
+      include: {
+        images: {
+          take: 1,
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
     
-    const serializableAds = adsFromDb.map(ad => ({
-      id: ad.id,
-      tenantId: ad.tenantId,
-      businessName: ad.businessName,
-      description: ad.description,
-      imageSrc: ad.imageSrc,
-      logoSrc: ad.logoSrc,
-      phone: ad.phone,
-      email: ad.email,
-      web: ad.web,
-      tags: ad.tags,
-      lat: ad.lat ? parseFloat(ad.lat.toString()) : null,
-      lng: ad.lng ? parseFloat(ad.lng.toString()) : null,
-    }));
+    // --- THIS IS THE FIX ---
+    // We destructure 'images' out of the ad object and spread the 'rest'
+    const serializableAds = JSON.parse(JSON.stringify(adsFromDb)).map(ad => {
+      const { images, ...restOfAd } = ad;
+      return {
+        ...restOfAd,
+        lat: ad.lat ? parseFloat(ad.lat) : null,
+        lng: ad.lng ? parseFloat(ad.lng) : null,
+        firstImageUrl: images && images.length > 0 ? images[0].url : null,
+      };
+    });
+    // ----------------------
 
     return {
       props: {
