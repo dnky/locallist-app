@@ -36,6 +36,7 @@ export async function getServerSideProps(context) {
         tenant: {
           domain: domain,
         },
+        isActive: true, // <-- IMPORTANT: Only show active ads
       },
       include: {
         tenant: true,

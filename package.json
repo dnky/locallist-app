@@ -10,7 +10,10 @@
     "db:push": "dotenv -e .env.management -- prisma db push"
   },
   "dependencies": {
+    "@hcaptcha/react-hcaptcha": "^1.10.1",
     "@prisma/client": "^6.17.1",
+    "@supabase/supabase-js": "^2.45.1",
+    "formidable": "^3.5.1",
     "leaflet": "^1.9.4",
     "next": "15.5.5",
     "prisma": "^6.17.1",

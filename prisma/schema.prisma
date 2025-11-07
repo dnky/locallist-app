@@ -34,6 +34,7 @@ model Ad {
   lat          Float?
   lng          Float?
   address      String?
+  isActive     Boolean   @default(false)
   createdAt    DateTime  @default(now()) @db.Timestamptz
   tenant       Tenant    @relation(fields: [tenantId], references: [id])
   images       Image[]   // <-- ADD RELATION TO IMAGES

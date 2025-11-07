@@ -31,7 +31,10 @@ export async function getServerSideProps(context) {
     }
 
     const adsFromDb = await prisma.ad.findMany({
-      where: { tenantId: tenant.id },
+      where: { 
+        tenantId: tenant.id,
+        isActive: true, // <-- IMPORTANT: Only show active ads
+      },
       include: {
         images: {
           take: 1,
