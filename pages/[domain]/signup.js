@@ -62,14 +62,14 @@ export default function SignupPage({ tenant }) {
         setStatus(s => ({ ...s, message: `Uploading ${image.name}...` }));
 
         const { data, error } = await supabase.storage
-          .from('ad-images')
+          .from('ad-photos')
           .upload(filePath, image);
 
         if (error) {
           throw new Error(`Failed to upload ${image.name}: ${error.message}`);
         }
 
-        const { data: { publicUrl } } = supabase.storage.from('ad-images').getPublicUrl(data.path);
+        const { data: { publicUrl } } = supabase.storage.from('ad-photos').getPublicUrl(data.path);
         uploadedImageUrls.push(publicUrl);
       }
 
