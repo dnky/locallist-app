@@ -60,10 +60,11 @@
   margin: 0;
 }
 
-/* --- ADD THESE NEW STYLES --- */
+/* --- PHOTO GALLERY (Desktop: Grid) --- */
 .photoGallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  /* Make images a bit larger on desktop */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
   padding: 0 15px;
@@ -71,12 +72,12 @@
 
 .photoGallery img {
   width: 100%;
-  height: 120px;
+  height: 160px; /* Taller images */
   object-fit: cover;
   border-radius: 8px;
   background-color: #e9ecef;
 }
-/* -------------------------- */
+/* ------------------------------------- */
 
 
 .photoGalleryPlaceholder {
@@ -218,10 +219,27 @@
     display: none;
   }
   
-  /* --- ADD THIS --- */
+  /* --- PHOTO GALLERY (Mobile: Side-Swipe) --- */
   .photoGallery {
-    padding: 0;
-    margin: 0 15px 1.5rem 15px;
+    display: flex;
+    overflow-x: auto;
+    gap: 0.75rem;
+    margin: 0 0 1.5rem 0;
+    padding: 0 15px; /* Provides spacing at start and end */
+
+    /* Hides the scrollbar for a cleaner look */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
   }
-  /* -------------- */
+  .photoGallery::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+  }
+
+  .photoGallery img {
+    /* Each image takes up a large portion of the screen width */
+    width: 85%;
+    height: 220px;
+    flex-shrink: 0; /* Prevents images from shrinking */
+  }
+  /* ------------------------------------------- */
 }
