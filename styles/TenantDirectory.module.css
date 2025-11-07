@@ -242,11 +242,12 @@
   .headerContent {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: 0.5rem;
   }
   
   .searchWrapper {
     max-width: none;
+    margin-bottom:6px;
   }
   
   .btnMapMobile {
