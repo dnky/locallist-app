@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from 'react'; // Import useRef
+// components/TenantAdList.js
+
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
@@ -16,45 +18,29 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   const [hoveredAdId, setHoveredAdId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAds, setFilteredAds] = useState(ads);
-
-  // --- FIX: Add a ref to track if navigation is happening ---
   const isNavigating = useRef(false);
-
   const filteredAdIds = new Set(filteredAds.map(ad => ad.id));
 
-  // Effect to sync state FROM the URL on load/back navigation
   useEffect(() => {
     if (router.isReady) {
       setSearchQuery(router.query.q || '');
     }
   }, [router.isReady, router.query.q]);
 
-  // --- FIX: Listen to router events to prevent race conditions ---
   useEffect(() => {
-    const handleRouteChangeStart = () => {
-      isNavigating.current = true;
-    };
-    const handleRouteChangeComplete = () => {
-      isNavigating.current = false;
-    };
-
+    const handleRouteChangeStart = () => { isNavigating.current = true; };
+    const handleRouteChangeComplete = () => { isNavigating.current = false; };
     router.events.on('routeChangeStart', handleRouteChangeStart);
     router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
     return () => {
       router.events.off('routeChangeStart', handleRouteChangeStart);
       router.events.off('routeChangeComplete', handleRouteChangeComplete);
     };
   }, [router.events]);
 
-  // Effect to sync state TO the URL when user types
   useEffect(() => {
     const handler = setTimeout(() => {
-      // --- FIX: Do not update URL if a navigation is already in progress ---
-      if (isNavigating.current) {
-        return;
-      }
-
+      if (isNavigating.current) return;
       const newQuery = { ...router.query };
       if (searchQuery) {
         newQuery.q = searchQuery;
@@ -63,11 +49,9 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       }
       router.replace({ query: newQuery }, undefined, { shallow: true });
     }, 300);
-
     return () => clearTimeout(handler);
   }, [searchQuery, router]);
 
-  // Effect to filter ads based on search query
   useEffect(() => {
     const lowercasedQuery = searchQuery.toLowerCase();
     if (!lowercasedQuery) {
@@ -97,7 +81,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       <Head>
         <title>{tenantTitle}</title>
       </Head>
-
       <div className={styles.tenantPage}>
         <SharedHeader 
           title={tenantTitle} 
@@ -129,51 +112,48 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         <div id="page-content-full-width">
           <div className={listingsContainerClasses}>
             <div className={styles.listingsPanel}>
-              <div className={styles.container}>
-                {searchQuery.length > 0 && (
-                  <div className={styles.resultsCounter}>
-                    Showing {filteredAds.length} of {ads.length} businesses
-                  </div>
-                )}
-
-                <div className={styles.businessListings}>
-                  {filteredAds.map(ad => (
-                    // This structure is correct for linking and styling
-                    <Link href={`/details?id=${ad.id}`} key={ad.id} passHref legacyBehavior>
-                      <a
-                        className={styles.businessListing}
-                        onMouseEnter={() => setHoveredAdId(ad.id)}
-                        onMouseLeave={() => setHoveredAdId(null)}
-                      >
-                        <div className={styles.listingImage}>
-                          {(ad.firstImageUrl || ad.logoSrc) && (
-                            <img
-                              src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
-                              alt={`Image for ${ad.businessName}`}
-                            />
+              {/* --- THIS IS THE FIX: The .container div has been removed from here --- */}
+              {searchQuery.length > 0 && (
+                <div className={styles.resultsCounter}>
+                  Showing {filteredAds.length} of {ads.length} businesses
+                </div>
+              )}
+              <div className={styles.businessListings}>
+                {filteredAds.map(ad => (
+                  <Link href={`/details?id=${ad.id}`} key={ad.id} passHref legacyBehavior>
+                    <a
+                      className={styles.businessListing}
+                      onMouseEnter={() => setHoveredAdId(ad.id)}
+                      onMouseLeave={() => setHoveredAdId(null)}
+                    >
+                      <div className={styles.listingImage}>
+                        {(ad.firstImageUrl || ad.logoSrc) && (
+                          <img
+                            src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
+                            alt={`Image for ${ad.businessName}`}
+                          />
+                        )}
+                      </div>
+                      <div className={styles.listingContent}>
+                        <h4>{ad.businessName}</h4>
+                        {ad.tags && <div className={styles.listingCategory}><span>{ad.tags.split(',')[0].trim()}</span></div>}
+                        <p>{ad.description || 'Contact this business for more information.'}</p>
+                        <div className={styles.listingContactMobile}>
+                          {ad.phone && (
+                            <div className={styles.contactItem}>
+                              <i className="fa-solid fa-phone"></i> {ad.phone}
+                            </div>
+                          )}
+                          {ad.email && (
+                            <div className={styles.contactItem}>
+                              <i className="fa-solid fa-envelope"></i> {ad.email}
+                            </div>
                           )}
                         </div>
-                        <div className={styles.listingContent}>
-                          <h4>{ad.businessName}</h4>
-                          {ad.tags && <div className={styles.listingCategory}><span>{ad.tags.split(',')[0].trim()}</span></div>}
-                          <p>{ad.description || 'Contact this business for more information.'}</p>
-                          <div className={styles.listingContactMobile}>
-                            {ad.phone && (
-                              <div className={styles.contactItem}>
-                                <i className="fa-solid fa-phone"></i> {ad.phone}
-                              </div>
-                            )}
-                            {ad.email && (
-                              <div className={styles.contactItem}>
-                                <i className="fa-solid fa-envelope"></i> {ad.email}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </a>
-                    </Link>
-                  ))}
-                </div>
+                      </div>
+                    </a>
+                  </Link>
+                ))}
               </div>
             </div>
 
