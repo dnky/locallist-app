@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import styles from '../styles/DetailsPage.module.css';
 import SharedHeader from '../components/SharedHeader';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
   ssr: false
@@ -14,6 +15,62 @@ const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
 
 export default function AdDetailPage({ ad, tenant }) {
   const router = useRouter();
+  
+  // --- ADD LIGHTBOX STATE ---
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // --- ADD LIGHTBOX HANDLERS ---
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const showNextImage = (e) => {
+    e.stopPropagation(); // Prevent closing lightbox when clicking button
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % ad.images.length);
+  };
+
+  const showPrevImage = (e) => {
+    e.stopPropagation(); // Prevent closing lightbox when clicking button
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + ad.images.length) % ad.images.length);
+  };
+
+  // --- ADD USEEFFECT FOR BODY SCROLL AND KEYBOARD NAV ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isLightboxOpen) return;
+      if (e.key === 'Escape') {
+        closeLightbox();
+      }
+      // Only allow arrow navigation if there's more than one image
+      if (ad.images && ad.images.length > 1) {
+        if (e.key === 'ArrowRight') {
+          showNextImage(e);
+        }
+        if (e.key === 'ArrowLeft') {
+          showPrevImage(e);
+        }
+      }
+    };
+
+    if (isLightboxOpen) {
+      document.body.classList.add('modal-open');
+      window.addEventListener('keydown', handleKeyDown);
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+
+    // Cleanup function to remove event listener and body class
+    return () => {
+      document.body.classList.remove('modal-open');
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLightboxOpen, ad.images]); // Re-run effect if lightbox state or ad data changes
 
   if (!ad || !tenant) {
     return (
@@ -39,7 +96,6 @@ export default function AdDetailPage({ ad, tenant }) {
       />
 
       <main className={styles.detailMainContainer}>
-        {/* --- A new wrapper to make both the title and category sticky --- */}
         <div className={styles.stickyHeaderWrapper}>
           <div className={styles.detailHeader}>
             <h1>{ad.businessName}</h1>
@@ -78,14 +134,14 @@ export default function AdDetailPage({ ad, tenant }) {
         
         <div className={styles.detailContentWrapper}>
           <div className={styles.detailMainContent}>
-            {/* --- MOVED THE PHOTO GALLERY INSIDE THE MAIN CONTENT COLUMN --- */}
             {ad.images && ad.images.length > 0 && (
               <div className={styles.photoGallery}>
-                {ad.images.map(image => (
+                {ad.images.map((image, index) => (
                   <img 
                     key={image.id} 
                     src={image.url} 
                     alt={image.altText || `Photo for ${ad.businessName}`} 
+                    onClick={() => openLightbox(index)}
                   />
                 ))}
               </div>
@@ -142,6 +198,35 @@ export default function AdDetailPage({ ad, tenant }) {
           </aside>
         </div>
       </main>
+
+      {/* --- ADD LIGHTBOX MARKUP --- */}
+      {isLightboxOpen && ad.images && ad.images.length > 0 && (
+        <div className={styles.lightboxOverlay} onClick={closeLightbox}>
+          <button className={`${styles.lightboxBtn} ${styles.lightboxClose}`} onClick={closeLightbox} aria-label="Close lightbox">
+            &times;
+          </button>
+          
+          {ad.images.length > 1 && (
+            <button className={`${styles.lightboxBtn} ${styles.lightboxPrev}`} onClick={showPrevImage} aria-label="Previous image">
+              &#10094;
+            </button>
+          )}
+
+          <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={ad.images[currentImageIndex].url} 
+              alt={ad.images[currentImageIndex].altText || `Photo for ${ad.businessName}`} 
+              className={styles.lightboxImage}
+            />
+          </div>
+
+          {ad.images.length > 1 && (
+            <button className={`${styles.lightboxBtn} ${styles.lightboxNext}`} onClick={showNextImage} aria-label="Next image">
+              &#10095;
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
