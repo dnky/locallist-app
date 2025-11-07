@@ -1,3 +1,5 @@
+/* styles/TenantDirectory.module.css */
+
 /* --- Tenant Page Color Theme & Font --- */
 .tenantPage {
   font-family: 'Poppins', sans-serif;
@@ -147,6 +149,9 @@
   padding: 20px 10px;
   border-bottom: 1px solid #e5e5e5;
   transition: background-color .2s ease;
+  /* --- THIS IS THE FIX FOR THE STYLING --- */
+  color: inherit; /* Prevents the browser's default blue/purple link color */
+  text-decoration: none; /* Removes the underline from the link */
 }
 .businessListing:hover {
   background-color: #fdf5f5;
@@ -158,8 +163,7 @@
   height: 80px;
   margin-right: 20px;
   flex-shrink: 0;
-  /* --- ADD THESE LINES --- */
-  background-color: #f0f0f0; /* A subtle placeholder background */
+  background-color: #f0f0f0; 
   border-radius: 4px;
 }
 
