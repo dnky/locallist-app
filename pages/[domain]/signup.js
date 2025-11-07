@@ -1,10 +1,15 @@
 import { useState, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
+import dynamic from 'next/dynamic';
 import prisma from '../../lib/prisma';
 import SharedHeader from '../../components/SharedHeader';
 import styles from '../../styles/SignupPage.module.css';
+import { supabase } from '../../lib/supabase-client'; // <-- USE THE NEW CLIENT-SIDE HELPER
+
+const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
+  ssr: false,
+});
 
 export default function SignupPage({ tenant }) {
   const router = useRouter();
@@ -20,7 +25,7 @@ export default function SignupPage({ tenant }) {
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [captchaToken, setCaptchaToken] = useState(null);
-  const [status, setStatus] = useState({ loading: false, error: null, success: null });
+  const [status, setStatus] = useState({ loading: false, error: null, success: null, message: '' });
   const captchaRef = useRef(null);
 
   const handleInputChange = (e) => {
@@ -45,35 +50,57 @@ export default function SignupPage({ tenant }) {
       setStatus({ ...status, error: 'Please complete the CAPTCHA.' });
       return;
     }
-    setStatus({ loading: true, error: null, success: null });
-
-    const submissionData = new FormData();
-    for (const key in formData) {
-      submissionData.append(key, formData[key]);
-    }
-    images.forEach((image) => {
-      submissionData.append('images', image);
-    });
-    submissionData.append('h-captcha-response', captchaToken);
-    submissionData.append('tenantDomain', tenant.domain);
+    setStatus({ loading: true, error: null, success: null, message: 'Starting submission...' });
 
     try {
+      // Step 1: Upload images directly to Supabase
+      const uploadedImageUrls = [];
+      for (const image of images) {
+        const fileName = `${Date.now()}-${image.name}`;
+        const filePath = `${tenant.domain}/${fileName}`;
+        
+        setStatus(s => ({ ...s, message: `Uploading ${image.name}...` }));
+
+        const { data, error } = await supabase.storage
+          .from('ad-images')
+          .upload(filePath, image);
+
+        if (error) {
+          throw new Error(`Failed to upload ${image.name}: ${error.message}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage.from('ad-images').getPublicUrl(data.path);
+        uploadedImageUrls.push(publicUrl);
+      }
+
+      // Step 2: Send text data and image URLs to our API
+      setStatus(s => ({ ...s, message: 'Finalizing submission...' }));
+      const payload = {
+        ...formData,
+        imageUrls: uploadedImageUrls,
+        captchaToken: captchaToken,
+        tenantDomain: tenant.domain,
+      };
+
       const res = await fetch('/api/signup', {
         method: 'POST',
-        body: submissionData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
-      const result = await res.json();
+      const result = await res.json(); // Now this should always receive JSON
       if (!res.ok) {
-        throw new Error(result.error || 'An unknown error occurred.');
+        throw new Error(result.error || 'An unknown error occurred during final submission.');
       }
       
-      setStatus({ loading: false, success: result.message, error: null });
+      setStatus({ loading: false, success: true, message: result.message, error: null });
       router.push(`/${tenant.domain}/thank-you-signup`);
 
     } catch (error) {
-      setStatus({ loading: false, error: error.message, success: null });
-      captchaRef.current.resetCaptcha();
+      setStatus({ loading: false, error: error.message, success: false, message: '' });
+      if (captchaRef.current) {
+        captchaRef.current.resetCaptcha();
+      }
     }
   };
 
@@ -88,7 +115,8 @@ export default function SignupPage({ tenant }) {
         <p>Fill out the form below to submit your business for review. Once approved, your ad will appear in our directory.</p>
         
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formSection}>
+            {/* All form groups remain the same */}
+            <div className={styles.formSection}>
             <h2>Business Details</h2>
             <div className={styles.formGroup}>
               <label htmlFor="businessName">Business Name *</label>
@@ -147,8 +175,9 @@ export default function SignupPage({ tenant }) {
             ref={captchaRef}
           />
           
+          {status.message && <p className={styles.info}>{status.message}</p>}
           {status.error && <p className={styles.error}>{status.error}</p>}
-          {status.success && <p className={styles.success}>{status.success}</p>}
+          {status.success && <p className={styles.success}>Submission successful!</p>}
 
           <button type="submit" className={styles.submitBtn} disabled={status.loading}>
             {status.loading ? 'Submitting...' : 'Submit for Review'}
@@ -160,6 +189,7 @@ export default function SignupPage({ tenant }) {
 }
 
 export async function getServerSideProps(context) {
+  // ... this function remains unchanged
   const { domain } = context.params;
   const tenant = await prisma.tenant.findUnique({
     where: { domain },

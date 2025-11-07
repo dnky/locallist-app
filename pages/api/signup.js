@@ -1,17 +1,15 @@
-import { formidable } from 'formidable';
-import { supabase } from '../../lib/supabase';
 import prisma from '../../lib/prisma';
-import fs from 'fs/promises';
-import path from 'path';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// We no longer need formidable, fs, or the server-side supabase client.
+
+// We can remove the special config. The default Next.js body parser will handle JSON.
+// export const config = { ... };
 
 async function verifyCaptcha(token) {
   const secret = process.env.HCAPTCHA_SECRET_KEY;
+  if (!secret) {
+      throw new Error("HCAPTCHA_SECRET_KEY is not set.");
+  }
   const response = await fetch('https://api.hcaptcha.com/siteverify', {
     method: 'POST',
     headers: {
@@ -29,59 +27,34 @@ export default async function handler(req, res) {
   }
 
   try {
-    const form = formidable({ multiples: true, maxFileSize: 5 * 1024 * 1024 }); // 5MB limit per file
+    const { captchaToken, tenantDomain, imageUrls, ...adData } = req.body;
 
-    const [fields, files] = await form.parse(req);
-    
-    const captchaToken = fields['h-captcha-response']?.[0];
     if (!captchaToken || !(await verifyCaptcha(captchaToken))) {
       return res.status(400).json({ error: 'CAPTCHA verification failed.' });
     }
 
-    const tenantDomain = fields.tenantDomain?.[0];
     const tenant = await prisma.tenant.findUnique({ where: { domain: tenantDomain } });
     if (!tenant) {
       return res.status(404).json({ error: 'Tenant not found.' });
     }
 
-    const uploadedImageUrls = [];
-    const imageFiles = files.images ? (Array.isArray(files.images) ? files.images : [files.images]) : [];
-
-    for (const file of imageFiles) {
-      const fileBuffer = await fs.readFile(file.filepath);
-      const fileName = `${Date.now()}-${file.originalFilename}`;
-      const filePath = `${tenant.domain}/${fileName}`;
-
-      const { data, error } = await supabase.storage
-        .from('ad-images')
-        .upload(filePath, fileBuffer, {
-          contentType: file.mimetype,
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (error) throw new Error(`Storage error: ${error.message}`);
-
-      const { data: { publicUrl } } = supabase.storage.from('ad-images').getPublicUrl(data.path);
-      uploadedImageUrls.push(publicUrl);
-    }
-
+    // The image URLs are already uploaded and provided in the request body.
     const newAd = await prisma.ad.create({
       data: {
         tenantId: tenant.id,
-        businessName: fields.businessName?.[0],
-        description: fields.description?.[0],
-        phone: fields.phone?.[0],
-        email: fields.email?.[0],
-        web: fields.web?.[0],
-        address: fields.address?.[0],
-        tags: fields.tags?.[0],
+        businessName: adData.businessName,
+        description: adData.description,
+        phone: adData.phone,
+        email: adData.email,
+        web: adData.web,
+        address: adData.address,
+        tags: adData.tags,
         isActive: false, // Default to inactive
         grid_h: 1, // Default values
         grid_w: 1,
-        imageSrc: uploadedImageUrls[0] || '/placeholder.png', // Use first image as cover
+        imageSrc: imageUrls?.[0] || '/placeholder.png', // Use first image as cover
         images: {
-          create: uploadedImageUrls.map(url => ({ url })),
+          create: imageUrls.map(url => ({ url })),
         },
       },
     });
