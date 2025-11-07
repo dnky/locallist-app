@@ -207,7 +207,7 @@
 @media (max-width: 768px) {
   .detailContentWrapper {
     flex-direction: column;
-    padding: 10px 15px;
+    padding: 0 15px;
   }
   .detailHeader h1 {
     font-size: 1.5rem;
