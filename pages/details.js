@@ -94,7 +94,6 @@ export default function AdDetailPage({ ad, tenant }) {
               {ad.description || 'No description provided.'}
             </p>
             
-            {/* --- THIS IS THE NEW SECTION --- */}
             {(ad.phone || ad.email || ad.web) && (
               <div className={styles.detailContactInfo}>
                 {ad.phone && (
@@ -117,7 +116,6 @@ export default function AdDetailPage({ ad, tenant }) {
                 )}
               </div>
             )}
-            {/* ------------------------------- */}
           </div>
 
           <aside className={styles.detailSidebar}>
@@ -128,7 +126,12 @@ export default function AdDetailPage({ ad, tenant }) {
             </div>
             <div className={styles.sidebarMap}>
               {ad.lat && ad.lng ? (
-                <DynamicMap ads={mapAds} />
+                // --- APPLY THE CHANGES HERE ---
+                <DynamicMap 
+                  ads={mapAds} 
+                  initialZoom={13}
+                  scrollWheelZoom={false}
+                />
               ) : (
                 <div className={styles.mapPlaceholder}>
                   <p>No location provided</p>

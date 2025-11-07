@@ -18,9 +18,10 @@ function MapEffect({ ads, filteredAdIds, searchQuery, viewMode }) {
   const map = useMap();
 
   useEffect(() => {
+    // Only fit bounds if there's more than one ad, otherwise the zoom is too tight.
     const adsToFit = searchQuery.length > 0 ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
     
-    if (adsToFit && adsToFit.length > 0) {
+    if (adsToFit && adsToFit.length > 1) {
       const bounds = L.latLngBounds(adsToFit.map(ad => [ad.lat, ad.lng]));
       map.fitBounds(bounds, { padding: [50, 50] });
     }
@@ -31,7 +32,7 @@ function MapEffect({ ads, filteredAdIds, searchQuery, viewMode }) {
       setTimeout(() => {
         map.invalidateSize();
         const adsToFit = searchQuery.length > 0 ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
-        if (adsToFit && adsToFit.length > 0) {
+        if (adsToFit && adsToFit.length > 1) {
           const bounds = L.latLngBounds(adsToFit.map(ad => [ad.lat, ad.lng]));
           map.fitBounds(bounds, { padding: [50, 50] });
         }
@@ -42,19 +43,25 @@ function MapEffect({ ads, filteredAdIds, searchQuery, viewMode }) {
   return null;
 }
 
-// --- THIS IS THE FIX ---
-// Add default values for all props that might not be passed.
+
 export default function DynamicMap({
   ads,
-  filteredAdIds = new Set(), // Default to an empty Set
-  searchQuery = '',          // Default to an empty string
-  hoveredAdId = null,        // Default to null
-  viewMode = 'map'           // Default to 'map'
+  filteredAdIds = new Set(),
+  searchQuery = '',
+  hoveredAdId = null,
+  viewMode = 'map',
+  // --- ADD THESE NEW PROPS WITH DEFAULTS ---
+  initialZoom = 13,
+  scrollWheelZoom = true
 }) {
   const markerRefs = useRef({});
-  // Ensure 'ads' itself isn't undefined before filtering
   const adsWithCoords = (ads || []).filter(ad => ad.lat && ad.lng); 
-  const mapCenter = [51.505, -0.09];
+  
+  // --- USE THE FIRST AD'S COORDS FOR THE CENTER IF AVAILABLE ---
+  const mapCenter = adsWithCoords.length > 0 
+    ? [adsWithCoords[0].lat, adsWithCoords[0].lng] 
+    : [51.505, -0.09];
+    
   const isSearching = searchQuery.length > 0;
 
   useEffect(() => {
@@ -84,7 +91,13 @@ export default function DynamicMap({
 
 
   return (
-    <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
+    // --- USE THE NEW PROPS IN THE MAPCONTAINER ---
+    <MapContainer 
+      center={mapCenter} 
+      zoom={initialZoom} 
+      scrollWheelZoom={scrollWheelZoom}
+      style={{ height: '100%', width: '100%' }}
+    >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
