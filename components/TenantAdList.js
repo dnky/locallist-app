@@ -21,6 +21,17 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   const isNavigating = useRef(false);
   const filteredAdIds = new Set(filteredAds.map(ad => ad.id));
 
+  const handleListingClick = (e, adId) => {
+    let target = e.target;
+    while (target && target !== e.currentTarget) {
+      if (target.tagName === 'A') {
+        return;
+      }
+      target = target.parentElement;
+    }
+    router.push(`/details?id=${adId}`);
+  };
+
   useEffect(() => {
     if (router.isReady) {
       setSearchQuery(router.query.q || '');
@@ -112,7 +123,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         <div id="page-content-full-width">
           <div className={listingsContainerClasses}>
             <div className={styles.listingsPanel}>
-              {/* --- THIS IS THE FIX: The .container div has been removed from here --- */}
               {searchQuery.length > 0 && (
                 <div className={styles.resultsCounter}>
                   Showing {filteredAds.length} of {ads.length} businesses
@@ -120,39 +130,71 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
               )}
               <div className={styles.businessListings}>
                 {filteredAds.map(ad => (
-                  <Link href={`/details?id=${ad.id}`} key={ad.id} passHref legacyBehavior>
-                    <a
-                      className={styles.businessListing}
-                      onMouseEnter={() => setHoveredAdId(ad.id)}
-                      onMouseLeave={() => setHoveredAdId(null)}
-                    >
-                      <div className={styles.listingImage}>
+                  <div
+                    key={ad.id}
+                    className={styles.businessListing}
+                    onMouseEnter={() => setHoveredAdId(ad.id)}
+                    onMouseLeave={() => setHoveredAdId(null)}
+                    onClick={(e) => handleListingClick(e, ad.id)}
+                  >
+                    <div className={styles.listingImage}>
+                      <Link href={`/details?id=${ad.id}`}>
                         {(ad.firstImageUrl || ad.logoSrc) && (
                           <img
                             src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
                             alt={`Image for ${ad.businessName}`}
                           />
                         )}
+                      </Link>
+                    </div>
+                    <div className={styles.listingContent}>
+                      <h4>
+                        <Link href={`/details?id=${ad.id}`} className={styles.listingTitleLink}>
+                          {ad.businessName}
+                        </Link>
+                      </h4>
+                      {ad.tags && <div className={styles.listingCategory}><span>{ad.tags.split(',')[0].trim()}</span></div>}
+                      
+                      <div className={styles.listingContactDesktop}>
+                        {ad.phone && (
+                          <a href={`tel:${ad.phone}`}>
+                            <i className="fa-solid fa-phone"></i> {ad.phone}
+                          </a>
+                        )}
+                        {ad.email && (
+                          <a href={`mailto:${ad.email}`}>
+                            <i className="fa-solid fa-envelope"></i> {ad.email}
+                          </a>
+                        )}
+                        {ad.web && (
+                          <a href={ad.web} target="_blank" rel="noopener noreferrer">
+                            <i className="fa-solid fa-globe"></i> Website
+                          </a>
+                        )}
                       </div>
-                      <div className={styles.listingContent}>
-                        <h4>{ad.businessName}</h4>
-                        {ad.tags && <div className={styles.listingCategory}><span>{ad.tags.split(',')[0].trim()}</span></div>}
-                        <p>{ad.description || 'Contact this business for more information.'}</p>
-                        <div className={styles.listingContactMobile}>
-                          {ad.phone && (
-                            <div className={styles.contactItem}>
-                              <i className="fa-solid fa-phone"></i> {ad.phone}
-                            </div>
-                          )}
-                          {ad.email && (
-                            <div className={styles.contactItem}>
-                              <i className="fa-solid fa-envelope"></i> {ad.email}
-                            </div>
-                          )}
-                        </div>
+                      {ad.address && (
+                        <p className={styles.listingAddress}>{ad.address}</p>
+                      )}
+
+                      {/* --- ADD THIS NEW ELEMENT --- */}
+                      {ad.description && (
+                        <p className={styles.listingDescription}>{ad.description}</p>
+                      )}
+                      
+                      <div className={styles.listingContactMobile}>
+                        {ad.phone && (
+                          <div className={styles.contactItem}>
+                            <i className="fa-solid fa-phone"></i> {ad.phone}
+                          </div>
+                        )}
+                        {ad.email && (
+                          <div className={styles.contactItem}>
+                            <i className="fa-solid fa-envelope"></i> {ad.email}
+                          </div>
+                        )}
                       </div>
-                    </a>
-                  </Link>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

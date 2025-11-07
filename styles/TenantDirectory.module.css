@@ -11,7 +11,6 @@
   --tenant-light-gray: #f7f7f7;
 }
 
-/* This container is now only used in the header/footer, which is correct */
 .container {
   margin-right: auto;
   margin-left: auto;
@@ -110,7 +109,7 @@
   font-size: 1rem;
 }
 
-/* --- List/Map Layout --- */
+/* --- List/Map Layout (Desktop Styles) --- */
 .listingsContainer {
   display: flex;
   background-color: #fff;
@@ -122,7 +121,6 @@
   flex-shrink: 0;
   height: calc(100vh - 86px - 61px);
   overflow-y: auto;
-  /* --- CHANGE: Added padding directly to the panel --- */
   padding: 0 30px;
 }
 
@@ -134,7 +132,6 @@
 }
 
 .resultsCounter {
-  /* --- CHANGE: Removed horizontal padding, as the parent now handles it --- */
   padding: 1.5rem 0 0.5rem;
   font-size: 0.9rem;
   color: #555;
@@ -142,7 +139,6 @@
 }
 
 .businessListings {
-  /* --- CHANGE: Removed padding, as the parent panel handles spacing now --- */
   padding-top: 1.5rem;
 }
 
@@ -162,6 +158,10 @@
   transform: translateY(-3px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  text-decoration: none;
+}
+.businessListing:hover h4 a {
+  text-decoration: none;
 }
 
 .listingImage {
@@ -182,18 +182,27 @@
 
 .listingContent {
   flex: 1;
+  overflow: hidden; /* --- THIS IS THE FIX --- */
+}
+
+.listingTitleLink {
+  color: inherit;
+  text-decoration: none;
+}
+.listingTitleLink:hover {
+  color: inherit;
+  text-decoration: none !important;
 }
 
 .businessListing h4 {
   margin-top: 0;
-  margin-bottom: 5px;
   font-size: 1.15rem;
-  font-weight: 600;
-  color: #0073bb;
+  font-weight: 900;
   text-decoration: none;
 }
-.businessListing:hover h4 {
-  text-decoration: underline;
+.businessListing:hover .listingTitleLink {
+  color: var(--tenant-primary-color);
+  text-decoration: none;
 }
 
 .listingCategory {
@@ -203,12 +212,59 @@
   text-transform: uppercase;
   font-weight: 500;
 }
-
+.listingCategory span {
+    background-color: #eee;
+    padding: 0 4px;
+}
 .businessListing p {
   margin-bottom: 0;
   color: #555;
   line-height: 1.5;
 }
+
+/* --- START: ADDED DESKTOP STYLES --- */
+.listingContactDesktop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem; /* row-gap column-gap */
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.listingContactDesktop a {
+  color: #7d7d7d;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.listingContactDesktop a:hover {
+  text-decoration: underline;
+  color: var(--tenant-primary-color);
+}
+
+.listingContactDesktop i {
+  color: #888;
+  margin-right: 0.5rem;
+  width: 1em;
+}
+
+.listingAddress {
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.listingDescription {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- END: ADDED DESKTOP STYLES --- */
 
 .listingContactMobile {
   display: none;
@@ -260,6 +316,13 @@
     margin-bottom:6px;
   }
   
+  /* HIDE DESKTOP CONTACT INFO ON MOBILE */
+  .listingContactDesktop,
+  .listingAddress,
+  .listingDescription {
+    display: none;
+  }
+  
   .btnMapMobile {
     display: inline-flex;
     align-items: center;
@@ -278,8 +341,12 @@
   .mapPanel { display: none; }
   
   .listingsPanel { 
-    /* Adjust padding for mobile */
     padding: 0; 
+  }
+  
+  /* --- CHANGE: Restore original mobile styling for the list wrapper --- */
+  .businessListings {
+      padding: 0;
   }
   
   .resultsCounter {
@@ -287,13 +354,17 @@
     border-bottom: 1px solid #e5e5e5;
   }
 
+  /* --- CHANGE: Restore original mobile styling for individual list items --- */
   .businessListing {
     padding: 1rem 15px;
     align-items: flex-start;
-  }
-  
-  .businessListings {
-      padding: 1rem;
+    /* Reset desktop styles */
+    border: none;
+    border-radius: 0;
+    margin-bottom: 0;
+    box-shadow: none;
+    /* Add back the simple bottom border */
+    border-bottom: 1px solid #e5e5e5;
   }
 
   .listingImage {
