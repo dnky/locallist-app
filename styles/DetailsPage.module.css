@@ -13,16 +13,6 @@
   --tenant-light-gray: #f7f7f7;
 }
 
-.container {
-  margin-right: auto;
-  margin-left: auto;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) { .container { width: 750px; } }
-@media (min-width: 992px) { .container { width: 970px; } }
-@media (min-width: 1200px) { .container { width: 1170px; } }
-
 /* --- Detail Page Specific Styles --- */
 .detailMainContainer {
   max-width: 1100px;
@@ -30,12 +20,18 @@
   padding: 0;
 }
 
-.detailHeader {
+/* --- NEW: Sticky Header Wrapper --- */
+.stickyHeaderWrapper {
   position: sticky;
-  top: 0; 
+  top: 0;
   z-index: 900;
-  padding: 0.7rem 15px 0;
   background-color: var(--tenant-light-gray);
+  padding-top: 0.7rem;
+  padding-bottom: 1rem;
+}
+
+.detailHeader {
+  padding: 0 15px; /* Moved padding here */
 }
 
 .detailHeader h1 {
@@ -49,8 +45,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0 15px;
-  margin: 0 0 0.8rem 0;
+  padding: 0 15px; /* Moved padding here */
+  margin-top: 5px; /* Adjusted margin */
 }
 
 .detailCategory {
@@ -58,27 +54,24 @@
   color: #777;
   padding: 0;
   margin: 0;
+  background-color: #ededed;
+  padding: 0 8px;
 }
 
 /* --- PHOTO GALLERY (Desktop: Grid) --- */
 .photoGallery {
   display: grid;
-  /* Make images a bit larger on desktop */
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(2, 1fr); /* --- THIS IS THE CHANGE --- */
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 0 15px;
 }
 
 .photoGallery img {
   width: 100%;
-  height: 160px; /* Taller images */
+  height: 200px; /* --- INCREASED HEIGHT FOR BETTER PROPORTIONS --- */
   object-fit: cover;
   border-radius: 8px;
   background-color: #e9ecef;
 }
-/* ------------------------------------- */
-
 
 .photoGalleryPlaceholder {
   display: flex;
@@ -86,7 +79,7 @@
   justify-content: center;
   gap: 1rem;
   width: auto;
-  margin: 0 15px 2rem 15px; /* Adjust margin */
+  margin: 0 15px 2rem 15px;
   height: 300px;
   background-color: #e9ecef;
   color: #6c757d;
@@ -96,8 +89,9 @@
 
 .detailContentWrapper {
   display: flex;
-  gap: 1rem;
-  margin-top:20px;
+  gap: 2rem; /* Increased gap */
+  padding: 20px 15px; /* Added padding */
+  align-items: flex-start; /* Important for sticky column */
 }
 
 .detailMainContent {
@@ -105,20 +99,15 @@
 }
 .detailMainContent h2 {
   font-size: 1.2rem;
+  margin-top: 2rem; /* Spacing after the photo gallery */
   margin-bottom: 0.5rem;
 }
 .detailMainContent .detailDescription {
   line-height: 1.7;
 }
 
-/* --- ADD THESE NEW STYLES --- */
 .detailContactInfo {
   padding-top: 1.5rem;
-}
-
-.detailContactInfo h3 {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
 }
 
 .contactRow {
@@ -130,7 +119,7 @@
 
 .contactRow i {
   color: #777;
-  width: 25px; /* Ensures consistent alignment */
+  width: 25px;
   margin-right: 0.75rem;
   text-align: center;
 }
@@ -138,16 +127,20 @@
 .contactRow a {
   color: var(--tenant-primary-color);
   text-decoration: none;
-  word-break: break-all; /* Prevents long URLs from breaking the layout */
+  word-break: break-all;
 }
 
 .contactRow a:hover {
   text-decoration: underline;
 }
-/* ---------------------------------- */
 
 .detailSidebar {
   flex: 1;
+  position: sticky;
+  top: 110px; /* Space for the sticky header */
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebarActions {
@@ -187,9 +180,10 @@
 
 .sidebarMap {
   width: 100%;
-  height: 250px;
   border-radius: 4px;
   overflow: hidden;
+  flex-grow: 1; /* Makes map fill remaining space */
+  min-height: 250px; /* Ensures map is not too small */
 }
 .sidebarMap .mapPlaceholder {
   height: 100%;
@@ -253,6 +247,13 @@
   .sidebarActions {
     display: none;
   }
+  .detailSidebar {
+    position: static; /* Revert sticky for mobile */
+    height: auto;
+  }
+  .sidebarMap {
+    height: 250px; /* Revert to fixed height for mobile */
+  }
   
   /* --- PHOTO GALLERY (Mobile: Side-Swipe) --- */
   .photoGallery {
@@ -260,14 +261,13 @@
     overflow-x: auto;
     gap: 0.75rem;
     margin: 0 0 1.5rem 0;
-    padding: 0 15px; /* Provides spacing at start and end */
+    padding: 0 15px;
 
-    /* Hides the scrollbar for a cleaner look */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   .photoGallery::-webkit-scrollbar {
-    display: none; /* Chrome/Safari/Opera */
+    display: none;
   }
 
   .photoGallery img {

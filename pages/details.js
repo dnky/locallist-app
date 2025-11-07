@@ -6,7 +6,7 @@ import prisma from '../lib/prisma';
 import { useRouter } from 'next/router';
 import styles from '../styles/DetailsPage.module.css';
 import SharedHeader from '../components/SharedHeader';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
 
 const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
   ssr: false
@@ -39,26 +39,15 @@ export default function AdDetailPage({ ad, tenant }) {
       />
 
       <main className={styles.detailMainContainer}>
-        <div className={styles.detailHeader}>
-          <h1>{ad.businessName}</h1>
-        </div>
-
-        <div className={styles.categoryWrapper}>
-          {ad.tags && <p className={styles.detailCategory}>{ad.tags.split(',')[0].trim()}</p>}
-        </div>
-
-        {ad.images && ad.images.length > 0 && (
-          <div className={styles.photoGallery}>
-            {ad.images.map(image => (
-              <img 
-                key={image.id} 
-                src={image.url} 
-                alt={image.altText || `Photo for ${ad.businessName}`} 
-              />
-            ))}
+        {/* --- A new wrapper to make both the title and category sticky --- */}
+        <div className={styles.stickyHeaderWrapper}>
+          <div className={styles.detailHeader}>
+            <h1>{ad.businessName}</h1>
           </div>
-        )}
-
+          <div className={styles.categoryWrapper}>
+            {ad.tags && <p className={styles.detailCategory}>{ad.tags.split(',')[0].trim()}</p>}
+          </div>
+        </div>
 
         <div className={styles.detailActionsMobile}>
           {ad.phone && (
@@ -89,6 +78,19 @@ export default function AdDetailPage({ ad, tenant }) {
         
         <div className={styles.detailContentWrapper}>
           <div className={styles.detailMainContent}>
+            {/* --- MOVED THE PHOTO GALLERY INSIDE THE MAIN CONTENT COLUMN --- */}
+            {ad.images && ad.images.length > 0 && (
+              <div className={styles.photoGallery}>
+                {ad.images.map(image => (
+                  <img 
+                    key={image.id} 
+                    src={image.url} 
+                    alt={image.altText || `Photo for ${ad.businessName}`} 
+                  />
+                ))}
+              </div>
+            )}
+
             <h2>About {ad.businessName}</h2>
             <p className={styles.detailDescription}>
               {ad.description || 'No description provided.'}
@@ -126,7 +128,6 @@ export default function AdDetailPage({ ad, tenant }) {
             </div>
             <div className={styles.sidebarMap}>
               {ad.lat && ad.lng ? (
-                // --- APPLY THE CHANGES HERE ---
                 <DynamicMap 
                   ads={mapAds} 
                   initialZoom={13}
