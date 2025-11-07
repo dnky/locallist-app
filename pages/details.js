@@ -47,8 +47,6 @@ export default function AdDetailPage({ ad, tenant }) {
           {ad.tags && <p className={styles.detailCategory}>{ad.tags.split(',')[0].trim()}</p>}
         </div>
 
-        {/* --- THIS IS THE FIX --- */}
-        {/* The entire gallery block is now conditional */}
         {ad.images && ad.images.length > 0 && (
           <div className={styles.photoGallery}>
             {ad.images.map(image => (
@@ -60,7 +58,6 @@ export default function AdDetailPage({ ad, tenant }) {
             ))}
           </div>
         )}
-        {/* ----------------------- */}
 
 
         <div className={styles.detailActionsMobile}>
@@ -96,6 +93,31 @@ export default function AdDetailPage({ ad, tenant }) {
             <p className={styles.detailDescription}>
               {ad.description || 'No description provided.'}
             </p>
+            
+            {/* --- THIS IS THE NEW SECTION --- */}
+            {(ad.phone || ad.email || ad.web) && (
+              <div className={styles.detailContactInfo}>
+                {ad.phone && (
+                  <div className={styles.contactRow}>
+                    <i className="fa-solid fa-phone"></i>
+                    <a href={`tel:${ad.phone}`}>{ad.phone}</a>
+                  </div>
+                )}
+                {ad.email && (
+                  <div className={styles.contactRow}>
+                    <i className="fa-solid fa-envelope"></i>
+                    <a href={`mailto:${ad.email}`}>{ad.email}</a>
+                  </div>
+                )}
+                {ad.web && (
+                  <div className={styles.contactRow}>
+                    <i className="fa-solid fa-globe"></i>
+                    <a href={ad.web} target="_blank" rel="noopener noreferrer">{ad.web}</a>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* ------------------------------- */}
           </div>
 
           <aside className={styles.detailSidebar}>
@@ -120,6 +142,7 @@ export default function AdDetailPage({ ad, tenant }) {
   );
 }
 
+// ... getServerSideProps remains unchanged
 export async function getServerSideProps(context) {
   const { id } = context.query;
   if (!id) {
@@ -128,13 +151,11 @@ export async function getServerSideProps(context) {
   try {
     const ad = await prisma.ad.findUnique({
       where: { id: String(id) },
-      // --- THIS IS THE KEY CHANGE ---
       include: { 
         tenant: true,
-        images: true // Include all related images for this ad
+        images: true
       },
     });
-    // ----------------------------
     if (!ad) {
       return { notFound: true };
     }

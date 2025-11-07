@@ -96,7 +96,7 @@
 
 .detailContentWrapper {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   margin-top:20px;
 }
 
@@ -110,6 +110,43 @@
 .detailMainContent .detailDescription {
   line-height: 1.7;
 }
+
+/* --- ADD THESE NEW STYLES --- */
+.detailContactInfo {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.detailContactInfo h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.contactRow i {
+  color: #777;
+  width: 25px; /* Ensures consistent alignment */
+  margin-right: 0.75rem;
+  text-align: center;
+}
+
+.contactRow a {
+  color: var(--tenant-primary-color);
+  text-decoration: none;
+  word-break: break-all; /* Prevents long URLs from breaking the layout */
+}
+
+.contactRow a:hover {
+  text-decoration: underline;
+}
+/* ---------------------------------- */
 
 .detailSidebar {
   flex: 1;
@@ -207,7 +244,7 @@
 @media (max-width: 768px) {
   .detailContentWrapper {
     flex-direction: column;
-    padding: 0 15px;
+    padding: 10px 15px;
   }
   .detailHeader h1 {
     font-size: 1.5rem;
