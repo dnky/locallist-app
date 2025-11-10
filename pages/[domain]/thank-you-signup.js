@@ -8,7 +8,7 @@ export default function ThankYouSignupPage({ tenant }) {
   return (
     <div className={styles.signupPage}>
       <Head>
-        <title>Thank You! - {tenant.title}</title>
+        <title>{`Thank You! - ${tenant.title}`}</title>
       </Head>
       <SharedHeader title={tenant.title} />
       <main className={`${styles.container} ${styles.thankYouContainer}`}>

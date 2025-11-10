@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "db:push": "dotenv -e .env.management -- prisma db push"
+    "db:push": "dotenv -e .env.management -- prisma db push",
+    "db:push:remote": "prisma db push"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^1.10.1",

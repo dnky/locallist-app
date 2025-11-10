@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import prisma from '../../lib/prisma';
 import SharedHeader from '../../components/SharedHeader';
 import styles from '../../styles/SignupPage.module.css';
-import { supabase } from '../../lib/supabase-client'; // <-- USE THE NEW CLIENT-SIDE HELPER
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -53,27 +52,47 @@ export default function SignupPage({ tenant }) {
     setStatus({ loading: true, error: null, success: null, message: 'Starting submission...' });
 
     try {
-      // Step 1: Upload images directly to Supabase
       const uploadedImageUrls = [];
+      // --- FIX #2: Corrected the bucket name here ---
+      const supabasePublicUrlBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ad-photos/`;
+
       for (const image of images) {
-        const fileName = `${Date.now()}-${image.name}`;
-        const filePath = `${tenant.domain}/${fileName}`;
+        setStatus(s => ({ ...s, message: `Preparing to upload ${image.name}...` }));
+
+        const presignRes = await fetch('/api/prepare-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: image.name,
+            tenantDomain: tenant.domain
+          }),
+        });
+
+        const { signedUrl, path, error: presignError } = await presignRes.json();
+
+        if (presignError) {
+          throw new Error(`Could not get upload URL for ${image.name}: ${presignError}`);
+        }
         
         setStatus(s => ({ ...s, message: `Uploading ${image.name}...` }));
+        
+        // --- FIX #1: Changed method from 'POST' to 'PUT' ---
+        const uploadRes = await fetch(signedUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': image.type },
+          body: image,
+        });
 
-        const { data, error } = await supabase.storage
-          .from('ad-photos')
-          .upload(filePath, image);
-
-        if (error) {
-          throw new Error(`Failed to upload ${image.name}: ${error.message}`);
+        if (!uploadRes.ok) {
+          const errorBody = await uploadRes.text();
+          console.error("Upload failed with body:", errorBody);
+          throw new Error(`Failed to upload ${image.name}.`);
         }
-
-        const { data: { publicUrl } } = supabase.storage.from('ad-photos').getPublicUrl(data.path);
-        uploadedImageUrls.push(publicUrl);
+        
+        const finalUrl = `${supabasePublicUrlBase}${path}`;
+        uploadedImageUrls.push(finalUrl);
       }
 
-      // Step 2: Send text data and image URLs to our API
       setStatus(s => ({ ...s, message: 'Finalizing submission...' }));
       const payload = {
         ...formData,
@@ -88,7 +107,7 @@ export default function SignupPage({ tenant }) {
         body: JSON.stringify(payload),
       });
 
-      const result = await res.json(); // Now this should always receive JSON
+      const result = await res.json();
       if (!res.ok) {
         throw new Error(result.error || 'An unknown error occurred during final submission.');
       }
@@ -98,16 +117,18 @@ export default function SignupPage({ tenant }) {
 
     } catch (error) {
       setStatus({ loading: false, error: error.message, success: false, message: '' });
-      if (captchaRef.current) {
+      
+      if (captchaRef.current && typeof captchaRef.current.resetCaptcha === 'function') {
         captchaRef.current.resetCaptcha();
       }
     }
   };
-
+  
+  // The rest of the component remains the same
   return (
     <div className={styles.signupPage}>
       <Head>
-        <title>Get Listed - {tenant.title}</title>
+        <title>{`Get Listed - ${tenant.title}`}</title>
       </Head>
       <SharedHeader title={tenant.title} />
       <main className={styles.container}>
@@ -189,7 +210,6 @@ export default function SignupPage({ tenant }) {
 }
 
 export async function getServerSideProps(context) {
-  // ... this function remains unchanged
   const { domain } = context.params;
   const tenant = await prisma.tenant.findUnique({
     where: { domain },

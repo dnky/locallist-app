@@ -87,7 +87,7 @@ export default function AdDetailPage({ ad, tenant }) {
   return (
     <div className={styles.detailPage}>
       <Head>
-        <title>{ad.businessName} - {tenant.title}</title>
+        <title>{`${ad.businessName} - ${tenant.title}`}</title>
       </Head>
 
       <SharedHeader 
