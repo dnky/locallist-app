@@ -44,7 +44,7 @@
 .categoryWrapper {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   padding: 0 15px; /* Moved padding here */
   margin-top: 5px; /* Adjusted margin */
 }
@@ -58,26 +58,70 @@
   padding: 0 8px;
 }
 
-/* --- PHOTO GALLERY (Desktop: Grid) --- */
+/* --- UPDATED PHOTO GALLERY STYLES --- */
 .photoGallery {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* --- THIS IS THE CHANGE --- */
+  position: relative; /* For positioning nav buttons */
+  margin: 0 15px 2rem 15px;
+}
+
+.galleryImageContainer {
+  display: flex;
   gap: 1rem;
 }
 
 .photoGallery img {
-  width: 100%;
-  height: 200px;
+  width: 50%; /* This ensures only two images fit */
+  height: 250px;
   object-fit: cover;
   border-radius: 8px;
   background-color: #e9ecef;
   cursor: pointer;
   transition: opacity 0.2s ease-in-out;
 }
+/* ------------------------------------ */
 
 .photoGallery img:hover {
   opacity: 0.85;
 }
+
+/* --- NEW GALLERY NAVIGATION BUTTONS --- */
+.galleryNavBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.galleryNavBtn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.galleryNavBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.prevBtn {
+  left: 10px;
+}
+
+.nextBtn {
+  right: 10px;
+}
+/* -------------------------------------- */
+
 
 .photoGalleryPlaceholder {
   display: flex;
@@ -261,26 +305,13 @@
     height: 250px; /* Revert to fixed height for mobile */
   }
   
-  /* --- PHOTO GALLERY (Mobile: Side-Swipe) --- */
+  /* --- PHOTO GALLERY (Mobile: now uses the same slider) --- */
   .photoGallery {
-    display: flex;
-    overflow-x: auto;
-    gap: 0.75rem;
     margin: 0 0 1.5rem 0;
-    padding: 0 15px;
-
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .photoGallery::-webkit-scrollbar {
-    display: none;
   }
 
   .photoGallery img {
-    /* Each image takes up a large portion of the screen width */
-    width: 85%;
-    height: 220px;
-    flex-shrink: 0; /* Prevents images from shrinking */
+    height: 180px;
   }
   /* ------------------------------------------- */
 }

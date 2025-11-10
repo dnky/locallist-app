@@ -16,11 +16,14 @@ const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
 export default function AdDetailPage({ ad, tenant }) {
   const router = useRouter();
   
-  // --- ADD LIGHTBOX STATE ---
+  // Lightbox state
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // --- ADD LIGHTBOX HANDLERS ---
+  // --- NEW: State for the image slider ---
+  const [visibleStartIndex, setVisibleStartIndex] = useState(0);
+
+  // Lightbox handlers
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
     setIsLightboxOpen(true);
@@ -31,23 +34,30 @@ export default function AdDetailPage({ ad, tenant }) {
   };
 
   const showNextImage = (e) => {
-    e.stopPropagation(); // Prevent closing lightbox when clicking button
+    e.stopPropagation();
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % ad.images.length);
   };
 
   const showPrevImage = (e) => {
-    e.stopPropagation(); // Prevent closing lightbox when clicking button
+    e.stopPropagation();
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + ad.images.length) % ad.images.length);
   };
 
-  // --- ADD USEEFFECT FOR BODY SCROLL AND KEYBOARD NAV ---
+  // --- NEW: Handlers for the image slider ---
+  const handlePrevClick = () => {
+    setVisibleStartIndex(prev => Math.max(0, prev - 1));
+  };
+  const handleNextClick = () => {
+    // We can show images up to the one before the last one
+    setVisibleStartIndex(prev => Math.min(ad.images.length - 2, prev + 1));
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isLightboxOpen) return;
       if (e.key === 'Escape') {
         closeLightbox();
       }
-      // Only allow arrow navigation if there's more than one image
       if (ad.images && ad.images.length > 1) {
         if (e.key === 'ArrowRight') {
           showNextImage(e);
@@ -65,12 +75,11 @@ export default function AdDetailPage({ ad, tenant }) {
       document.body.classList.remove('modal-open');
     }
 
-    // Cleanup function to remove event listener and body class
     return () => {
       document.body.classList.remove('modal-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isLightboxOpen, ad.images]); // Re-run effect if lightbox state or ad data changes
+  }, [isLightboxOpen, ad.images]);
 
   if (!ad || !tenant) {
     return (
@@ -101,7 +110,6 @@ export default function AdDetailPage({ ad, tenant }) {
             <h1>{ad.businessName}</h1>
           </div>
           <div className={styles.categoryWrapper}>
-            {/* --- THIS IS THE FIX --- */}
             {ad.tags && ad.tags.split(',').map(tag => (
               <p key={tag.trim()} className={styles.detailCategory}>{tag.trim()}</p>
             ))}
@@ -109,44 +117,50 @@ export default function AdDetailPage({ ad, tenant }) {
         </div>
 
         <div className={styles.detailActionsMobile}>
-          {ad.phone && (
-            <a href={`tel:${ad.phone}`} className={styles.btnActionIcon} aria-label="Call">
-              <i className="fa-solid fa-phone"></i>
-              <span>Call</span>
-            </a>
-          )}
-          {ad.email && (
-            <a href={`mailto:${ad.email}`} className={styles.btnActionIcon} aria-label="Email">
-              <i className="fa-solid fa-envelope"></i>
-              <span>Email</span>
-            </a>
-          )}
-          {ad.web && (
-            <a href={ad.web} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Website">
-              <i className="fa-solid fa-globe"></i>
-              <span>Website</span>
-            </a>
-          )}
-          {ad.lat && ad.lng && (
-            <a href={`https://www.google.com/maps/dir/?api=1&destination=${ad.lat},${ad.lng}`} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Directions">
-              <i className="fa-solid fa-diamond-turn-right"></i>
-              <span>Directions</span>
-            </a>
-          )}
+          {ad.phone && <a href={`tel:${ad.phone}`} className={styles.btnActionIcon} aria-label="Call"><i className="fa-solid fa-phone"></i><span>Call</span></a>}
+          {ad.email && <a href={`mailto:${ad.email}`} className={styles.btnActionIcon} aria-label="Email"><i className="fa-solid fa-envelope"></i><span>Email</span></a>}
+          {ad.web && <a href={ad.web} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Website"><i className="fa-solid fa-globe"></i><span>Website</span></a>}
+          {ad.lat && ad.lng && <a href={`https://www.google.com/maps/dir/?api=1&destination=${ad.lat},${ad.lng}`} target="_blank" rel="noopener noreferrer" className={styles.btnActionIcon} aria-label="Directions"><i className="fa-solid fa-diamond-turn-right"></i><span>Directions</span></a>}
         </div>
         
         <div className={styles.detailContentWrapper}>
           <div className={styles.detailMainContent}>
+            
+            {/* --- THIS IS THE UPDATED GALLERY SECTION --- */}
             {ad.images && ad.images.length > 0 && (
               <div className={styles.photoGallery}>
-                {ad.images.map((image, index) => (
-                  <img 
-                    key={image.id} 
-                    src={image.url} 
-                    alt={image.altText || `Photo for ${ad.businessName}`} 
-                    onClick={() => openLightbox(index)}
-                  />
-                ))}
+                {ad.images.length > 2 && (
+                  <button
+                    className={`${styles.galleryNavBtn} ${styles.prevBtn}`}
+                    onClick={handlePrevClick}
+                    disabled={visibleStartIndex === 0}
+                    aria-label="Previous images"
+                  >
+                    &#10094;
+                  </button>
+                )}
+                
+                <div className={styles.galleryImageContainer}>
+                  {ad.images.slice(visibleStartIndex, visibleStartIndex + 2).map((image, index) => (
+                    <img 
+                      key={image.id} 
+                      src={image.url} 
+                      alt={image.altText || `Photo for ${ad.businessName}`} 
+                      onClick={() => openLightbox(visibleStartIndex + index)} // Pass original index
+                    />
+                  ))}
+                </div>
+
+                {ad.images.length > 2 && (
+                  <button
+                    className={`${styles.galleryNavBtn} ${styles.nextBtn}`}
+                    onClick={handleNextClick}
+                    disabled={visibleStartIndex >= ad.images.length - 2}
+                    aria-label="Next images"
+                  >
+                    &#10095;
+                  </button>
+                )}
               </div>
             )}
 
@@ -157,24 +171,9 @@ export default function AdDetailPage({ ad, tenant }) {
             
             {(ad.phone || ad.email || ad.web) && (
               <div className={styles.detailContactInfo}>
-                {ad.phone && (
-                  <div className={styles.contactRow}>
-                    <i className="fa-solid fa-phone"></i>
-                    <a href={`tel:${ad.phone}`}>{ad.phone}</a>
-                  </div>
-                )}
-                {ad.email && (
-                  <div className={styles.contactRow}>
-                    <i className="fa-solid fa-envelope"></i>
-                    <a href={`mailto:${ad.email}`}>{ad.email}</a>
-                  </div>
-                )}
-                {ad.web && (
-                  <div className={styles.contactRow}>
-                    <i className="fa-solid fa-globe"></i>
-                    <a href={ad.web} target="_blank" rel="noopener noreferrer">{ad.web}</a>
-                  </div>
-                )}
+                {ad.phone && <div className={styles.contactRow}><i className="fa-solid fa-phone"></i><a href={`tel:${ad.phone}`}>{ad.phone}</a></div>}
+                {ad.email && <div className={styles.contactRow}><i className="fa-solid fa-envelope"></i><a href={`mailto:${ad.email}`}>{ad.email}</a></div>}
+                {ad.web && <div className={styles.contactRow}><i className="fa-solid fa-globe"></i><a href={ad.web} target="_blank" rel="noopener noreferrer">{ad.web}</a></div>}
               </div>
             )}
           </div>
@@ -185,7 +184,6 @@ export default function AdDetailPage({ ad, tenant }) {
               {ad.phone && <a href={`tel:${ad.phone}`} className={`${styles.btnAction} ${styles.btnPhone}`}><i className="fa-solid fa-phone"></i> Call</a>}
               {ad.email && <a href={`mailto:${ad.email}`} className={`${styles.btnAction} ${styles.btnEmail}`}><i className="fa-solid fa-envelope"></i> Email</a>}
             </div>
-            {/* Only render the map container if coordinates exist */}
             {ad.lat && ad.lng && (
               <div className={styles.sidebarMap}>
                 <DynamicMap 
@@ -199,19 +197,12 @@ export default function AdDetailPage({ ad, tenant }) {
         </div>
       </main>
 
-      {/* --- ADD LIGHTBOX MARKUP --- */}
       {isLightboxOpen && ad.images && ad.images.length > 0 && (
         <div className={styles.lightboxOverlay} onClick={closeLightbox}>
-          <button className={`${styles.lightboxBtn} ${styles.lightboxClose}`} onClick={closeLightbox} aria-label="Close lightbox">
-            &times;
-          </button>
+          <button className={`${styles.lightboxBtn} ${styles.lightboxClose}`} onClick={closeLightbox} aria-label="Close lightbox">&times;</button>
           
-          {ad.images.length > 1 && (
-            <button className={`${styles.lightboxBtn} ${styles.lightboxPrev}`} onClick={showPrevImage} aria-label="Previous image">
-              &#10094;
-            </button>
-          )}
-
+          {ad.images.length > 1 && <button className={`${styles.lightboxBtn} ${styles.lightboxPrev}`} onClick={showPrevImage} aria-label="Previous image">&#10094;</button>}
+          
           <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
             <img 
               src={ad.images[currentImageIndex].url} 
@@ -219,12 +210,8 @@ export default function AdDetailPage({ ad, tenant }) {
               className={styles.lightboxImage}
             />
           </div>
-
-          {ad.images.length > 1 && (
-            <button className={`${styles.lightboxBtn} ${styles.lightboxNext}`} onClick={showNextImage} aria-label="Next image">
-              &#10095;
-            </button>
-          )}
+          
+          {ad.images.length > 1 && <button className={`${styles.lightboxBtn} ${styles.lightboxNext}`} onClick={showNextImage} aria-label="Next image">&#10095;</button>}
         </div>
       )}
     </div>
