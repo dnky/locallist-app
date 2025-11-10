@@ -180,7 +180,7 @@ export default function SignupPage({ tenant }) {
       </Head>
       <SharedHeader title={tenant.title} />
       <main className={styles.container}>
-        <h1>Get Your Business Listed on {tenant.name}</h1>
+        <h1>List Your Business</h1>
         <p>Fill out the form below to submit your business for review. Once approved, your ad will appear in our directory.</p>
         
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -195,10 +195,10 @@ export default function SignupPage({ tenant }) {
               <label htmlFor="description">Description / About Us</label>
               <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows="5"></textarea>
             </div>
-             <div className={styles.formGroup}>
+             {/*<div className={styles.formGroup}>
               <label htmlFor="tags">Category / Tags (comma-separated, e.g., Plumber, Emergency, Local)</label>
               <input type="text" id="tags" name="tags" value={formData.tags} onChange={handleInputChange} />
-            </div>
+            </div>*/}
           </div>
           
           <div className={styles.formSection}>
