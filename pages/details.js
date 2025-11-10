@@ -6,6 +6,7 @@ import prisma from '../lib/prisma';
 import { useRouter } from 'next/router';
 import styles from '../styles/DetailsPage.module.css';
 import SharedHeader from '../components/SharedHeader';
+import SharedFooter from '../components/SharedFooter';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -16,65 +17,41 @@ const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
 export default function AdDetailPage({ ad, tenant }) {
   const router = useRouter();
   
-  // Lightbox state
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // --- NEW: State for the image slider ---
   const [visibleStartIndex, setVisibleStartIndex] = useState(0);
 
-  // Lightbox handlers
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
     setIsLightboxOpen(true);
   };
-
-  const closeLightbox = () => {
-    setIsLightboxOpen(false);
-  };
-
+  const closeLightbox = () => setIsLightboxOpen(false);
   const showNextImage = (e) => {
     e.stopPropagation();
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % ad.images.length);
+    setCurrentImageIndex((prev) => (prev + 1) % ad.images.length);
   };
-
   const showPrevImage = (e) => {
     e.stopPropagation();
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + ad.images.length) % ad.images.length);
+    setCurrentImageIndex((prev) => (prev - 1 + ad.images.length) % ad.images.length);
   };
-
-  // --- NEW: Handlers for the image slider ---
-  const handlePrevClick = () => {
-    setVisibleStartIndex(prev => Math.max(0, prev - 1));
-  };
-  const handleNextClick = () => {
-    // We can show images up to the one before the last one
-    setVisibleStartIndex(prev => Math.min(ad.images.length - 2, prev + 1));
-  };
+  const handlePrevClick = () => setVisibleStartIndex((prev) => Math.max(0, prev - 1));
+  const handleNextClick = () => setVisibleStartIndex((prev) => Math.min(ad.images.length - 2, prev + 1));
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isLightboxOpen) return;
-      if (e.key === 'Escape') {
-        closeLightbox();
-      }
-      if (ad.images && ad.images.length > 1) {
-        if (e.key === 'ArrowRight') {
-          showNextImage(e);
-        }
-        if (e.key === 'ArrowLeft') {
-          showPrevImage(e);
-        }
+      if (e.key === 'Escape') closeLightbox();
+      if (ad.images?.length > 1) {
+        if (e.key === 'ArrowRight') showNextImage(e);
+        if (e.key === 'ArrowLeft') showPrevImage(e);
       }
     };
-
     if (isLightboxOpen) {
       document.body.classList.add('modal-open');
       window.addEventListener('keydown', handleKeyDown);
     } else {
       document.body.classList.remove('modal-open');
     }
-
     return () => {
       document.body.classList.remove('modal-open');
       window.removeEventListener('keydown', handleKeyDown);
@@ -106,13 +83,9 @@ export default function AdDetailPage({ ad, tenant }) {
 
       <main className={styles.detailMainContainer}>
         <div className={styles.stickyHeaderWrapper}>
-          <div className={styles.detailHeader}>
-            <h1>{ad.businessName}</h1>
-          </div>
+          <div className={styles.detailHeader}><h1>{ad.businessName}</h1></div>
           <div className={styles.categoryWrapper}>
-            {ad.tags && ad.tags.split(',').map(tag => (
-              <p key={tag.trim()} className={styles.detailCategory}>{tag.trim()}</p>
-            ))}
+            {ad.tags && ad.tags.split(',').map(tag => <p key={tag.trim()} className={styles.detailCategory}>{tag.trim()}</p>)}
           </div>
         </div>
 
@@ -125,50 +98,17 @@ export default function AdDetailPage({ ad, tenant }) {
         
         <div className={styles.detailContentWrapper}>
           <div className={styles.detailMainContent}>
-            
-            {/* --- THIS IS THE UPDATED GALLERY SECTION --- */}
-            {ad.images && ad.images.length > 0 && (
+            {ad.images?.length > 0 && (
               <div className={styles.photoGallery}>
-                {ad.images.length > 2 && (
-                  <button
-                    className={`${styles.galleryNavBtn} ${styles.prevBtn}`}
-                    onClick={handlePrevClick}
-                    disabled={visibleStartIndex === 0}
-                    aria-label="Previous images"
-                  >
-                    &#10094;
-                  </button>
-                )}
-                
+                {ad.images.length > 2 && <button className={`${styles.galleryNavBtn} ${styles.prevBtn}`} onClick={handlePrevClick} disabled={visibleStartIndex === 0} aria-label="Previous images">&#10094;</button>}
                 <div className={styles.galleryImageContainer}>
-                  {ad.images.slice(visibleStartIndex, visibleStartIndex + 2).map((image, index) => (
-                    <img 
-                      key={image.id} 
-                      src={image.url} 
-                      alt={image.altText || `Photo for ${ad.businessName}`} 
-                      onClick={() => openLightbox(visibleStartIndex + index)} // Pass original index
-                    />
-                  ))}
+                  {ad.images.slice(visibleStartIndex, visibleStartIndex + 2).map((image, index) => <img key={image.id} src={image.url} alt={image.altText || `Photo for ${ad.businessName}`} onClick={() => openLightbox(visibleStartIndex + index)} />)}
                 </div>
-
-                {ad.images.length > 2 && (
-                  <button
-                    className={`${styles.galleryNavBtn} ${styles.nextBtn}`}
-                    onClick={handleNextClick}
-                    disabled={visibleStartIndex >= ad.images.length - 2}
-                    aria-label="Next images"
-                  >
-                    &#10095;
-                  </button>
-                )}
+                {ad.images.length > 2 && <button className={`${styles.galleryNavBtn} ${styles.nextBtn}`} onClick={handleNextClick} disabled={visibleStartIndex >= ad.images.length - 2} aria-label="Next images">&#10095;</button>}
               </div>
             )}
-
             <h2>About {ad.businessName}</h2>
-            <p className={styles.detailDescription}>
-              {ad.description || 'No description provided.'}
-            </p>
-            
+            <p className={styles.detailDescription}>{ad.description || 'No description provided.'}</p>
             {(ad.phone || ad.email || ad.web) && (
               <div className={styles.detailContactInfo}>
                 {ad.phone && <div className={styles.contactRow}><i className="fa-solid fa-phone"></i><a href={`tel:${ad.phone}`}>{ad.phone}</a></div>}
@@ -177,40 +117,26 @@ export default function AdDetailPage({ ad, tenant }) {
               </div>
             )}
           </div>
-
           <aside className={styles.detailSidebar}>
             <div className={styles.sidebarActions}>
               {ad.web && <a href={ad.web} target="_blank" rel="noopener noreferrer" className={`${styles.btnAction} ${styles.btnWebsite}`}><i className="fa-solid fa-globe"></i> Website</a>}
               {ad.phone && <a href={`tel:${ad.phone}`} className={`${styles.btnAction} ${styles.btnPhone}`}><i className="fa-solid fa-phone"></i> Call</a>}
               {ad.email && <a href={`mailto:${ad.email}`} className={`${styles.btnAction} ${styles.btnEmail}`}><i className="fa-solid fa-envelope"></i> Email</a>}
             </div>
-            {ad.lat && ad.lng && (
-              <div className={styles.sidebarMap}>
-                <DynamicMap 
-                  ads={mapAds} 
-                  initialZoom={13}
-                  scrollWheelZoom={false}
-                />
-              </div>
-            )}
+            {ad.lat && ad.lng && <div className={styles.sidebarMap}><DynamicMap ads={mapAds} initialZoom={13} scrollWheelZoom={false} /></div>}
           </aside>
         </div>
       </main>
 
-      {isLightboxOpen && ad.images && ad.images.length > 0 && (
+      <SharedFooter tenantDomain={tenant.domain} />
+
+      {isLightboxOpen && ad.images?.length > 0 && (
         <div className={styles.lightboxOverlay} onClick={closeLightbox}>
           <button className={`${styles.lightboxBtn} ${styles.lightboxClose}`} onClick={closeLightbox} aria-label="Close lightbox">&times;</button>
-          
           {ad.images.length > 1 && <button className={`${styles.lightboxBtn} ${styles.lightboxPrev}`} onClick={showPrevImage} aria-label="Previous image">&#10094;</button>}
-          
           <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
-            <img 
-              src={ad.images[currentImageIndex].url} 
-              alt={ad.images[currentImageIndex].altText || `Photo for ${ad.businessName}`} 
-              className={styles.lightboxImage}
-            />
+            <img src={ad.images[currentImageIndex].url} alt={ad.images[currentImageIndex].altText || `Photo for ${ad.businessName}`} className={styles.lightboxImage} />
           </div>
-          
           {ad.images.length > 1 && <button className={`${styles.lightboxBtn} ${styles.lightboxNext}`} onClick={showNextImage} aria-label="Next image">&#10095;</button>}
         </div>
       )}
@@ -218,23 +144,15 @@ export default function AdDetailPage({ ad, tenant }) {
   );
 }
 
-// ... getServerSideProps remains unchanged
 export async function getServerSideProps(context) {
   const { id } = context.query;
-  if (!id) {
-    return { notFound: true };
-  }
+  if (!id) return { notFound: true };
   try {
     const ad = await prisma.ad.findUnique({
       where: { id: String(id) },
-      include: { 
-        tenant: true,
-        images: true
-      },
+      include: { tenant: true, images: true },
     });
-    if (!ad) {
-      return { notFound: true };
-    }
+    if (!ad) return { notFound: true };
     return {
       props: {
         ad: JSON.parse(JSON.stringify(ad)),

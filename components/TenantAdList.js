@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import styles from '../styles/TenantDirectory.module.css';
 import SharedHeader from './SharedHeader';
+import SharedFooter from './SharedFooter';
 
 const DynamicMap = dynamic(() => import('./DynamicMap'), {
   ssr: false
@@ -20,6 +21,9 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   const [filteredAds, setFilteredAds] = useState(ads);
   const isNavigating = useRef(false);
   const filteredAdIds = new Set(filteredAds.map(ad => ad.id));
+
+  // The scrollableListRef is no longer needed
+  // const scrollableListRef = useRef(null);
 
   const handleListingClick = (e, adId) => {
     let target = e.target;
@@ -88,144 +92,110 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   ].join(' ');
 
   return (
-    <>
+    <div className={styles.tenantPage}>
       <Head>
         <title>{tenantTitle}</title>
       </Head>
-      <div className={styles.tenantPage}>
-        <SharedHeader 
-          title={tenantTitle} 
-          subheading="Your trusted local business directory"
-          isSticky={true} 
-        >
-          <div className={styles.searchWrapper}>
-            <button
-              className={styles.btnMapMobile}
-              onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-              title="Toggle map view"
-            >
-              <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
+      
+      <SharedHeader 
+        title={tenantTitle} 
+        subheading="Your trusted local business directory"
+        isSticky={true} 
+      >
+        <div className={styles.searchWrapper}>
+          <button
+            className={styles.btnMapMobile}
+            onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+            title="Toggle map view"
+          >
+            <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
+          </button>
+          <div className={styles.searchBar}>
+            <input
+              type="text"
+              placeholder="Search businesses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button type="button">
+              <i className="fa-solid fa-search"></i>
             </button>
-            <div className={styles.searchBar}>
-              <input
-                type="text"
-                placeholder="Search businesses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="button">
-                <i className="fa-solid fa-search"></i>
-              </button>
-            </div>
-          </div>
-        </SharedHeader>
-
-        <div id="page-content-full-width">
-          <div className={listingsContainerClasses}>
-            <div className={styles.listingsPanel}>
-              {searchQuery.length > 0 && (
-                <div className={styles.resultsCounter}>
-                  Showing {filteredAds.length} of {ads.length} businesses
-                </div>
-              )}
-              <div className={styles.businessListings}>
-                {filteredAds.map(ad => (
-                  <div
-                    key={ad.id}
-                    className={styles.businessListing}
-                    onMouseEnter={() => setHoveredAdId(ad.id)}
-                    onMouseLeave={() => setHoveredAdId(null)}
-                    onClick={(e) => handleListingClick(e, ad.id)}
-                  >
-                    <div className={styles.listingImage}>
-                      <Link href={`/details?id=${ad.id}`}>
-                        {(ad.firstImageUrl || ad.logoSrc) && (
-                          <img
-                            src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
-                            alt={`Image for ${ad.businessName}`}
-                          />
-                        )}
-                      </Link>
-                    </div>
-                    <div className={styles.listingContent}>
-                      <h4>
-                        <Link href={`/details?id=${ad.id}`} className={styles.listingTitleLink}>
-                          {ad.businessName}
-                        </Link>
-                      </h4>
-                      {/* --- THIS IS THE FIX --- */}
-                      {ad.tags && (
-                        <div className={styles.listingCategory}>
-                          {ad.tags.split(',').map(tag => (
-                            <span key={tag.trim()}>{tag.trim()}</span>
-                          ))}
-                        </div>
-                      )}
-                      
-                      <div className={styles.listingContactDesktop}>
-                        {ad.phone && (
-                          <a href={`tel:${ad.phone}`}>
-                            <i className="fa-solid fa-phone"></i> {ad.phone}
-                          </a>
-                        )}
-                        {ad.email && (
-                          <a href={`mailto:${ad.email}`}>
-                            <i className="fa-solid fa-envelope"></i> {ad.email}
-                          </a>
-                        )}
-                        {ad.web && (
-                          <a href={ad.web} target="_blank" rel="noopener noreferrer">
-                            <i className="fa-solid fa-globe"></i> Website
-                          </a>
-                        )}
-                      </div>
-                      {ad.address && (
-                        <p className={styles.listingAddress}>{ad.address}</p>
-                      )}
-
-                      {/* --- ADD THIS NEW ELEMENT --- */}
-                      {ad.description && (
-                        <p className={styles.listingDescription}>{ad.description}</p>
-                      )}
-                      
-                      <div className={styles.listingContactMobile}>
-                        {ad.phone && (
-                          <div className={styles.contactItem}>
-                            <i className="fa-solid fa-phone"></i> {ad.phone}
-                          </div>
-                        )}
-                        {ad.email && (
-                          <div className={styles.contactItem}>
-                            <i className="fa-solid fa-envelope"></i> {ad.email}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className={styles.mapPanel}>
-              <DynamicMap
-                ads={ads}
-                filteredAdIds={filteredAdIds}
-                searchQuery={searchQuery}
-                hoveredAdId={hoveredAdId}
-                viewMode={viewMode}
-              />
-            </div>
           </div>
         </div>
+      </SharedHeader>
 
-        <footer id="footer" className={styles.footer}>
-          <div className={styles.copyright}>
-            <div className={styles.container}>
-              <p>Copyright {new Date().getFullYear()} © {tenantName}. All rights reserved.</p>
+      <div id="page-content-full-width" className={styles.pageContent}>
+        <div className={listingsContainerClasses}>
+          <div className={styles.listingsPanel}>
+            {searchQuery.length > 0 && (
+              <div className={styles.resultsCounter}>
+                Showing {filteredAds.length} of {ads.length} businesses
+              </div>
+            )}
+            <div className={styles.businessListings}>
+              {filteredAds.map(ad => (
+                <div
+                  key={ad.id}
+                  className={styles.businessListing}
+                  onMouseEnter={() => setHoveredAdId(ad.id)}
+                  onMouseLeave={() => setHoveredAdId(null)}
+                  onClick={(e) => handleListingClick(e, ad.id)}
+                >
+                  <div className={styles.listingImage}>
+                    <Link href={`/details?id=${ad.id}`}>
+                      {(ad.firstImageUrl || ad.logoSrc) && (
+                        <img
+                          src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
+                          alt={`Image for ${ad.businessName}`}
+                        />
+                      )}
+                    </Link>
+                  </div>
+                  <div className={styles.listingContent}>
+                    <h4>
+                      <Link href={`/details?id=${ad.id}`} className={styles.listingTitleLink}>
+                        {ad.businessName}
+                      </Link>
+                    </h4>
+                    {ad.tags && (
+                      <div className={styles.listingCategory}>
+                        {ad.tags.split(',').map(tag => (
+                          <span key={tag.trim()}>{tag.trim()}</span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className={styles.listingContactDesktop}>
+                      {ad.phone && <a href={`tel:${ad.phone}`}><i className="fa-solid fa-phone"></i> {ad.phone}</a>}
+                      {ad.email && <a href={`mailto:${ad.email}`}><i className="fa-solid fa-envelope"></i> {ad.email}</a>}
+                      {ad.web && <a href={ad.web} target="_blank" rel="noopener noreferrer"><i className="fa-solid fa-globe"></i> Website</a>}
+                    </div>
+                    {ad.address && <p className={styles.listingAddress}>{ad.address}</p>}
+                    {ad.description && <p className={styles.listingDescription}>{ad.description}</p>}
+                    
+                    <div className={styles.listingContactMobile}>
+                      {ad.phone && <div className={styles.contactItem}><i className="fa-solid fa-phone"></i> {ad.phone}</div>}
+                      {ad.email && <div className={styles.contactItem}><i className="fa-solid fa-envelope"></i> {ad.email}</div>}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </footer>
+
+          <div className={styles.mapPanel}>
+            <DynamicMap
+              ads={ads}
+              filteredAdIds={filteredAdIds}
+              searchQuery={searchQuery}
+              hoveredAdId={hoveredAdId}
+              viewMode={viewMode}
+            />
+          </div>
+        </div>
       </div>
-    </>
+      
+      <SharedFooter tenantDomain={tenantDomain} />
+    </div>
   );
 }
