@@ -153,7 +153,14 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                           {ad.businessName}
                         </Link>
                       </h4>
-                      {ad.tags && <div className={styles.listingCategory}><span>{ad.tags.split(',')[0].trim()}</span></div>}
+                      {/* --- THIS IS THE FIX --- */}
+                      {ad.tags && (
+                        <div className={styles.listingCategory}>
+                          {ad.tags.split(',').map(tag => (
+                            <span key={tag.trim()}>{tag.trim()}</span>
+                          ))}
+                        </div>
+                      )}
                       
                       <div className={styles.listingContactDesktop}>
                         {ad.phone && (

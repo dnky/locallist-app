@@ -205,7 +205,11 @@
   text-decoration: none;
 }
 
+/* --- THIS IS THE FIX --- */
 .listingCategory {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   font-size: 0.8rem;
   color: #777;
   margin-bottom: 8px;
@@ -213,9 +217,11 @@
   font-weight: 500;
 }
 .listingCategory span {
-    background-color: #eee;
-    padding: 0 4px;
+  background-color: #eee;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
+
 .businessListing p {
   margin-bottom: 0;
   color: #555;

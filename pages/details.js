@@ -101,7 +101,10 @@ export default function AdDetailPage({ ad, tenant }) {
             <h1>{ad.businessName}</h1>
           </div>
           <div className={styles.categoryWrapper}>
-            {ad.tags && <p className={styles.detailCategory}>{ad.tags.split(',')[0].trim()}</p>}
+            {/* --- THIS IS THE FIX --- */}
+            {ad.tags && ad.tags.split(',').map(tag => (
+              <p key={tag.trim()} className={styles.detailCategory}>{tag.trim()}</p>
+            ))}
           </div>
         </div>
 
@@ -182,7 +185,6 @@ export default function AdDetailPage({ ad, tenant }) {
               {ad.phone && <a href={`tel:${ad.phone}`} className={`${styles.btnAction} ${styles.btnPhone}`}><i className="fa-solid fa-phone"></i> Call</a>}
               {ad.email && <a href={`mailto:${ad.email}`} className={`${styles.btnAction} ${styles.btnEmail}`}><i className="fa-solid fa-envelope"></i> Email</a>}
             </div>
-            {/* --- THIS IS THE CHANGE --- */}
             {/* Only render the map container if coordinates exist */}
             {ad.lat && ad.lng && (
               <div className={styles.sidebarMap}>
