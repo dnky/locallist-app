@@ -10,6 +10,48 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
 });
 
+// --- ADD THIS HELPER FUNCTION ---
+/**
+ * Resizes an image file to fit within max dimensions.
+ * @param {File} file The image file to resize.
+ * @param {number} maxWidth The maximum width.
+ * @param {number} maxHeight The maximum height.
+ * @returns {Promise<File>} A promise that resolves with the resized file.
+ */
+function resizeImage(file, maxWidth, maxHeight) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const { width, height } = img;
+
+        if (width <= maxWidth && height <= maxHeight) {
+          // No resizing needed
+          resolve(file);
+          return;
+        }
+
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        const newWidth = Math.round(width * ratio);
+        const newHeight = Math.round(height * ratio);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, { type: file.type, lastModified: Date.now() }));
+        }, file.type, 0.9); // Use 90% quality for JPEGs
+      };
+    };
+  });
+}
+
 export default function SignupPage({ tenant }) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -52,18 +94,25 @@ export default function SignupPage({ tenant }) {
     setStatus({ loading: true, error: null, success: null, message: 'Starting submission...' });
 
     try {
+      // --- DEFINE MAX DIMENSIONS ---
+      const MAX_WIDTH = 1000;
+      const MAX_HEIGHT = 800;
       const uploadedImageUrls = [];
-      // --- FIX #2: Corrected the bucket name here ---
       const supabasePublicUrlBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ad-photos/`;
 
       for (const image of images) {
-        setStatus(s => ({ ...s, message: `Preparing to upload ${image.name}...` }));
+        // --- RESIZE THE IMAGE FIRST ---
+        setStatus(s => ({ ...s, message: `Resizing ${image.name}...` }));
+        const resizedImage = await resizeImage(image, MAX_WIDTH, MAX_HEIGHT);
+        // -----------------------------
+
+        setStatus(s => ({ ...s, message: `Preparing to upload ${resizedImage.name}...` }));
 
         const presignRes = await fetch('/api/prepare-upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            fileName: image.name,
+            fileName: resizedImage.name,
             tenantDomain: tenant.domain
           }),
         });
@@ -74,19 +123,18 @@ export default function SignupPage({ tenant }) {
           throw new Error(`Could not get upload URL for ${image.name}: ${presignError}`);
         }
         
-        setStatus(s => ({ ...s, message: `Uploading ${image.name}...` }));
+        setStatus(s => ({ ...s, message: `Uploading ${resizedImage.name}...` }));
         
-        // --- FIX #1: Changed method from 'POST' to 'PUT' ---
         const uploadRes = await fetch(signedUrl, {
           method: 'PUT',
-          headers: { 'Content-Type': image.type },
-          body: image,
+          headers: { 'Content-Type': resizedImage.type },
+          body: resizedImage,
         });
 
         if (!uploadRes.ok) {
           const errorBody = await uploadRes.text();
           console.error("Upload failed with body:", errorBody);
-          throw new Error(`Failed to upload ${image.name}.`);
+          throw new Error(`Failed to upload ${resizedImage.name}.`);
         }
         
         const finalUrl = `${supabasePublicUrlBase}${path}`;
