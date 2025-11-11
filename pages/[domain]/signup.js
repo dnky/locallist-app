@@ -10,7 +10,6 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
 });
 
-// --- ADD THIS HELPER FUNCTION ---
 /**
  * Resizes an image file to fit within max dimensions.
  * @param {File} file The image file to resize.
@@ -29,7 +28,6 @@ function resizeImage(file, maxWidth, maxHeight) {
         const { width, height } = img;
 
         if (width <= maxWidth && height <= maxHeight) {
-          // No resizing needed
           resolve(file);
           return;
         }
@@ -46,7 +44,7 @@ function resizeImage(file, maxWidth, maxHeight) {
 
         canvas.toBlob((blob) => {
           resolve(new File([blob], file.name, { type: file.type, lastModified: Date.now() }));
-        }, file.type, 0.9); // Use 90% quality for JPEGs
+        }, file.type, 0.9);
       };
     };
   });
@@ -94,20 +92,16 @@ export default function SignupPage({ tenant }) {
     setStatus({ loading: true, error: null, success: null, message: 'Starting submission...' });
 
     try {
-      // --- DEFINE MAX DIMENSIONS ---
       const MAX_WIDTH = 1000;
       const MAX_HEIGHT = 800;
       const uploadedImageUrls = [];
       const supabasePublicUrlBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ad-photos/`;
 
       for (const image of images) {
-        // --- RESIZE THE IMAGE FIRST ---
         setStatus(s => ({ ...s, message: `Resizing ${image.name}...` }));
         const resizedImage = await resizeImage(image, MAX_WIDTH, MAX_HEIGHT);
-        // -----------------------------
 
         setStatus(s => ({ ...s, message: `Preparing to upload ${resizedImage.name}...` }));
-
         const presignRes = await fetch('/api/prepare-upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -116,21 +110,15 @@ export default function SignupPage({ tenant }) {
             tenantDomain: tenant.domain
           }),
         });
-
         const { signedUrl, path, error: presignError } = await presignRes.json();
-
-        if (presignError) {
-          throw new Error(`Could not get upload URL for ${image.name}: ${presignError}`);
-        }
+        if (presignError) throw new Error(`Could not get upload URL for ${image.name}: ${presignError}`);
         
         setStatus(s => ({ ...s, message: `Uploading ${resizedImage.name}...` }));
-        
         const uploadRes = await fetch(signedUrl, {
           method: 'PUT',
           headers: { 'Content-Type': resizedImage.type },
           body: resizedImage,
         });
-
         if (!uploadRes.ok) {
           const errorBody = await uploadRes.text();
           console.error("Upload failed with body:", errorBody);
@@ -142,37 +130,24 @@ export default function SignupPage({ tenant }) {
       }
 
       setStatus(s => ({ ...s, message: 'Finalizing submission...' }));
-      const payload = {
-        ...formData,
-        imageUrls: uploadedImageUrls,
-        captchaToken: captchaToken,
-        tenantDomain: tenant.domain,
-      };
-
+      const payload = { ...formData, imageUrls: uploadedImageUrls, captchaToken, tenantDomain: tenant.domain };
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.error || 'An unknown error occurred during final submission.');
-      }
+      if (!res.ok) throw new Error(result.error || 'An unknown error occurred.');
       
       setStatus({ loading: false, success: true, message: result.message, error: null });
       router.push(`/${tenant.domain}/thank-you-signup`);
 
     } catch (error) {
       setStatus({ loading: false, error: error.message, success: false, message: '' });
-      
-      if (captchaRef.current && typeof captchaRef.current.resetCaptcha === 'function') {
-        captchaRef.current.resetCaptcha();
-      }
+      if (captchaRef.current?.resetCaptcha) captchaRef.current.resetCaptcha();
     }
   };
   
-  // The rest of the component remains the same
   return (
     <div className={styles.signupPage}>
       <Head>
@@ -180,11 +155,27 @@ export default function SignupPage({ tenant }) {
       </Head>
       <SharedHeader title={tenant.title} />
       <main className={styles.container}>
-        <h1>List Your Business</h1>
+        <h1>Get Your Business Listed on {tenant.name}</h1>
         <p>Fill out the form below to submit your business for review. Once approved, your ad will appear in our directory.</p>
         
+        <div className={styles.pricingSection}>
+          {/* --- THIS IS THE CHANGE --- */}
+          <div className={styles.priceOptionsContainer}>
+            <div className={styles.priceOption}>
+              <span className={styles.price}>£3</span>
+              <span className={styles.period}>per month</span>
+            </div>
+            <div className={styles.priceOption}>
+              <span className={styles.price}>£30</span>
+              <span className={styles.period}>per year (save £6!)</span>
+            </div>
+          </div>
+          <p className={styles.pricingNote}>
+            After submission, we will contact you to confirm your listing and arrange payment. No payment is required today.
+          </p>
+        </div>
+        
         <form onSubmit={handleSubmit} className={styles.form}>
-            {/* All form groups remain the same */}
             <div className={styles.formSection}>
             <h2>Business Details</h2>
             <div className={styles.formGroup}>
@@ -195,10 +186,10 @@ export default function SignupPage({ tenant }) {
               <label htmlFor="description">Description / About Us</label>
               <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows="5"></textarea>
             </div>
-             {/*<div className={styles.formGroup}>
+             <div className={styles.formGroup}>
               <label htmlFor="tags">Category / Tags (comma-separated, e.g., Plumber, Emergency, Local)</label>
               <input type="text" id="tags" name="tags" value={formData.tags} onChange={handleInputChange} />
-            </div>*/}
+            </div>
           </div>
           
           <div className={styles.formSection}>
@@ -225,7 +216,7 @@ export default function SignupPage({ tenant }) {
 
           <div className={styles.formSection}>
             <h2>Images</h2>
-            <p>Upload up to 5 images for your listing (max 5MB each). The first image will be your main cover photo.</p>
+            <p>Upload up to 5 images for your listing. The first image will be your main cover photo.</p>
             <div className={styles.formGroup}>
               <input type="file" id="images" name="images" onChange={handleImageChange} multiple accept="image/png, image/jpeg, image/gif" />
             </div>
@@ -259,17 +250,7 @@ export default function SignupPage({ tenant }) {
 
 export async function getServerSideProps(context) {
   const { domain } = context.params;
-  const tenant = await prisma.tenant.findUnique({
-    where: { domain },
-  });
-
-  if (!tenant) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      tenant: JSON.parse(JSON.stringify(tenant)),
-    },
-  };
+  const tenant = await prisma.tenant.findUnique({ where: { domain } });
+  if (!tenant) return { notFound: true };
+  return { props: { tenant: JSON.parse(JSON.stringify(tenant)) } };
 }
