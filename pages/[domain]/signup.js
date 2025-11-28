@@ -60,6 +60,11 @@ export default function SignupPage({ tenant }) {
     web: '',
     address: '',
     tags: '',
+    // --- NEW STATE FIELDS ---
+    displayPhone: true,
+    displayEmail: true,
+    displayOnMap: true,
+    adminNotes: '',
   });
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -68,8 +73,11 @@ export default function SignupPage({ tenant }) {
   const captchaRef = useRef(null);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({ 
+        ...prev, 
+        [name]: type === 'checkbox' ? checked : value 
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -159,7 +167,6 @@ export default function SignupPage({ tenant }) {
         <p>Fill out the form below to submit your business for review. Once approved, your ad will appear in our directory.</p>
         
         <div className={styles.pricingSection}>
-          {/* --- THIS IS THE CHANGE --- */}
           <div className={styles.priceOptionsContainer}>
             <div className={styles.priceOption}>
               <span className={styles.price}>£3</span>
@@ -212,6 +219,20 @@ export default function SignupPage({ tenant }) {
               <label htmlFor="address">Full Address</label>
               <input type="text" id="address" name="address" value={formData.address} onChange={handleInputChange} />
             </div>
+            {/* --- NEW CHECKBOXES --- */}
+            <h3 className={styles.subheading}>Display Preferences</h3>
+            <div className={styles.formGroupCheck}>
+                <input type="checkbox" id="displayPhone" name="displayPhone" checked={formData.displayPhone} onChange={handleInputChange} />
+                <label htmlFor="displayPhone">Display my phone number on my ad</label>
+            </div>
+            <div className={styles.formGroupCheck}>
+                <input type="checkbox" id="displayEmail" name="displayEmail" checked={formData.displayEmail} onChange={handleInputChange} />
+                <label htmlFor="displayEmail">Display my email address on my ad</label>
+            </div>
+            <div className={styles.formGroupCheck}>
+                <input type="checkbox" id="displayOnMap" name="displayOnMap" checked={formData.displayOnMap} onChange={handleInputChange} />
+                <label htmlFor="displayOnMap">Show my business location on the map (requires full address)</label>
+            </div>
           </div>
 
           <div className={styles.formSection}>
@@ -227,6 +248,16 @@ export default function SignupPage({ tenant }) {
                 ))}
               </div>
             )}
+          </div>
+          
+          {/* --- NEW TEXTAREA --- */}
+          <div className={styles.formSection}>
+            <h2>Any additional comments for us?</h2>
+            <p>This information is for admin review only and will <strong>not</strong> be published on your ad.</p>
+            <div className={styles.formGroup}>
+              <label htmlFor="adminNotes">Your comments</label>
+              <textarea id="adminNotes" name="adminNotes" value={formData.adminNotes} onChange={handleInputChange} rows="4"></textarea>
+            </div>
           </div>
 
           <HCaptcha

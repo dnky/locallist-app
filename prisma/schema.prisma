@@ -35,6 +35,13 @@ model Ad {
   lng          Float?
   address      String?
   isActive     Boolean   @default(false)
+  
+  // --- ADDED FIELDS ---
+  displayPhone Boolean   @default(true)
+  displayEmail Boolean   @default(true)
+  displayOnMap Boolean   @default(true)
+  adminNotes   String?   // For internal comments from the user
+
   createdAt    DateTime  @default(now()) @db.Timestamptz
   tenant       Tenant    @relation(fields: [tenantId], references: [id])
   images       Image[]   // <-- ADD RELATION TO IMAGES
