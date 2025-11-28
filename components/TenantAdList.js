@@ -56,18 +56,25 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
     }, [router.events]);
   
     useEffect(() => {
-      const handler = setTimeout(() => {
-        if (isNavigating.current) return;
-        const newQuery = { ...router.query };
-        if (searchQuery) {
-          newQuery.q = searchQuery;
-        } else {
-          delete newQuery.q;
-        }
-        router.replace({ query: newQuery }, undefined, { shallow: true });
-      }, 300);
-      return () => clearTimeout(handler);
-    }, [searchQuery, router]);
+    const handler = setTimeout(() => {
+      if (isNavigating.current) return;
+      const newQuery = { ...router.query };
+      delete newQuery.domain; 
+      delete newQuery.slug;
+
+      if (searchQuery) {
+        newQuery.q = searchQuery;
+      } else {
+        delete newQuery.q;
+      }
+      router.replace(
+        { pathname: router.pathname, query: newQuery }, 
+        undefined, 
+        { shallow: true }
+      );
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery, router]);
   
     useEffect(() => {
       const lowercasedQuery = searchQuery.toLowerCase();
