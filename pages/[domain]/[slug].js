@@ -1,16 +1,16 @@
-// pages/details.js
+// pages/[domain]/[slug].js
 
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
-import prisma from '../lib/prisma';
+import prisma from '../../lib/prisma'; 
 import { useRouter } from 'next/router';
-import styles from '../styles/DetailsPage.module.css';
-import SharedHeader from '../components/SharedHeader';
-import SharedFooter from '../components/SharedFooter';
+import styles from '../../styles/DetailsPage.module.css'; 
+import SharedHeader from '../../components/SharedHeader'; 
+import SharedFooter from '../../components/SharedFooter'; 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
-const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
+const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
   ssr: false
 });
 
@@ -58,11 +58,15 @@ export default function AdDetailPage({ ad, tenant }) {
     };
   }, [isLightboxOpen, ad.images]);
 
+  if (router.isFallback) {
+    return <div>Loading...</div>;
+  }
+
   if (!ad || !tenant) {
     return (
       <main style={{ textAlign: 'center', paddingTop: '20vh' }}>
         <h1>Ad Not Found</h1>
-        <p>The ad you are looking for does not exist.</p>
+        <p>The business you are looking for does not exist.</p>
         <Link href="/">Go back to the directory</Link>
       </main>
     );
@@ -145,16 +149,31 @@ export default function AdDetailPage({ ad, tenant }) {
 }
 
 export async function getServerSideProps(context) {
-  const { id } = context.query;
-  if (!id) return { notFound: true };
+  const { slug, domain } = context.params;
+
   try {
-    const ad = await prisma.ad.findUnique({
-      where: { id: String(id) },
+    // 1. Fetch Tenant
+    const tenant = await prisma.tenant.findUnique({
+      where: { domain: domain },
+    });
+    
+    if (!tenant) return { notFound: true };
+
+    // 2. Fetch Ad by Slug
+    // We also check tenantId to ensure the slug belongs to this domain
+    const ad = await prisma.ad.findFirst({
+      where: { 
+        slug: slug,
+        tenantId: tenant.id 
+      },
       include: { tenant: true, images: true },
     });
+
+    // 3. Validation: Exists? Premium?
     if (!ad || ad.type === 'BASIC') {
-        return { notFound: true };
+      return { notFound: true };
     }
+
     return {
       props: {
         ad: JSON.parse(JSON.stringify(ad)),

@@ -160,7 +160,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                   >
                    {/* ... (Keep existing Premium JSX content: Image, Content, etc.) ... */}
                     <div className={styles.listingImage}>
-                        <Link href={`/details?id=${ad.id}`}>
+                        <Link href={`/${ad.slug}`}>
                         {(ad.firstImageUrl || ad.logoSrc) && (
                             <img
                             src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
@@ -171,7 +171,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                     </div>
                     <div className={styles.listingContent}>
                         <h4>
-                        <Link href={`/details?id=${ad.id}`} className={styles.listingTitleLink}>
+                        <Link href={`/${ad.slug}`} className={styles.listingTitleLink}>
                             {ad.businessName}
                         </Link>
                         </h4>

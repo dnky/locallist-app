@@ -54,6 +54,8 @@ model Ad {
   createdAt    DateTime  @default(now()) @db.Timestamptz
   tenant       Tenant    @relation(fields: [tenantId], references: [id])
   images       Image[]
+
+  slug         String    @unique
 }
 
 model Image {
