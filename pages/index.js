@@ -41,6 +41,10 @@ export async function getServerSideProps(context) {
           orderBy: { createdAt: 'asc' },
         },
       },
+      orderBy: [
+        { type: 'desc' },       // 'PREMIUM' starts with P, 'BASIC' with B. Descending puts Premium first.
+        { businessName: 'asc' } // Secondary sort: Alphabetical by name
+      ]
     });
     
     // --- THIS IS THE FIX ---

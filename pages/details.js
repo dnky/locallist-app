@@ -152,7 +152,9 @@ export async function getServerSideProps(context) {
       where: { id: String(id) },
       include: { tenant: true, images: true },
     });
-    if (!ad) return { notFound: true };
+    if (!ad || ad.type === 'BASIC') {
+        return { notFound: true };
+    }
     return {
       props: {
         ad: JSON.parse(JSON.stringify(ad)),

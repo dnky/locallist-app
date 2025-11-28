@@ -9,6 +9,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- ADD THIS ENUM ---
+enum ListingType {
+  BASIC
+  PREMIUM
+}
+
 model Tenant {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
@@ -21,9 +27,13 @@ model Tenant {
 model Ad {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId     String    @db.Uuid
+  
+  // --- ADD THIS FIELD ---
+  type         ListingType @default(PREMIUM)
+  
   businessName String
   description  String?
-  imageSrc     String // This can now be a "cover image"
+  imageSrc     String
   logoSrc      String?
   phone        String?
   email        String?
@@ -36,23 +46,21 @@ model Ad {
   address      String?
   isActive     Boolean   @default(false)
   
-  // --- ADDED FIELDS ---
   displayPhone Boolean   @default(true)
   displayEmail Boolean   @default(true)
   displayOnMap Boolean   @default(true)
-  adminNotes   String?   // For internal comments from the user
+  adminNotes   String?
 
   createdAt    DateTime  @default(now()) @db.Timestamptz
   tenant       Tenant    @relation(fields: [tenantId], references: [id])
-  images       Image[]   // <-- ADD RELATION TO IMAGES
+  images       Image[]
 }
 
-// --- ADD THIS NEW MODEL ---
 model Image {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   adId      String   @db.Uuid
-  url       String   // The public URL of the image in Supabase Storage
-  altText   String?  // Good for accessibility
+  url       String
+  altText   String?
   createdAt DateTime @default(now()) @db.Timestamptz
   ad        Ad       @relation(fields: [adId], references: [id])
 }

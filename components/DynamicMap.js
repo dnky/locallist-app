@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import Link from 'next/link';
 
-// Icon fix remains the same and is crucial
+// Icon fix for Leaflet in Next.js
 delete L.Icon.Default.prototype._getIconUrl;
 
 L.Icon.Default.mergeOptions({
@@ -43,21 +43,19 @@ function MapEffect({ ads, filteredAdIds, searchQuery, viewMode }) {
   return null;
 }
 
-
 export default function DynamicMap({
   ads,
   filteredAdIds = new Set(),
   searchQuery = '',
   hoveredAdId = null,
   viewMode = 'map',
-  // --- ADD THESE NEW PROPS WITH DEFAULTS ---
   initialZoom = 13,
   scrollWheelZoom = true
 }) {
   const markerRefs = useRef({});
   const adsWithCoords = (ads || []).filter(ad => ad.lat && ad.lng); 
   
-  // --- USE THE FIRST AD'S COORDS FOR THE CENTER IF AVAILABLE ---
+  // Use the first ad's coords for the center if available, otherwise default to London
   const mapCenter = adsWithCoords.length > 0 
     ? [adsWithCoords[0].lat, adsWithCoords[0].lng] 
     : [51.505, -0.09];
@@ -89,9 +87,7 @@ export default function DynamicMap({
     }
   }, [hoveredAdId]);
 
-
   return (
-    // --- USE THE NEW PROPS IN THE MAPCONTAINER ---
     <MapContainer 
       center={mapCenter} 
       zoom={initialZoom} 
@@ -126,9 +122,21 @@ export default function DynamicMap({
             <Popup>
               <strong>{ad.businessName}</strong>
               <br />
-              <Link href={`/details?id=${ad.id}`}>
-                View Details
-              </Link>
+              
+              {/* Conditional Rendering based on Listing Type */}
+              {ad.type !== 'BASIC' ? (
+                /* Premium Listings get a link to details */
+                <Link href={`/details?id=${ad.id}`}>
+                  View Details
+                </Link>
+              ) : (
+                /* Basic Listings get contact info directly (no link) */
+                <div style={{ fontSize: '0.85rem', marginTop: '4px', lineHeight: '1.4' }}>
+                    {ad.phone && <div><i className="fa-solid fa-phone" style={{fontSize: '0.8em', marginRight: '5px'}}></i>{ad.phone}</div>}
+                    {ad.web && <div><a href={ad.web} target="_blank" rel="noopener noreferrer">Website</a></div>}
+                </div>
+              )}
+
             </Popup>
           </Marker>
         );

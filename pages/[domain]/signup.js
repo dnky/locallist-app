@@ -1,3 +1,5 @@
+// pages/[domain]/signup.js
+
 import { useState, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -12,10 +14,6 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
 
 /**
  * Resizes an image file to fit within max dimensions.
- * @param {File} file The image file to resize.
- * @param {number} maxWidth The maximum width.
- * @param {number} maxHeight The maximum height.
- * @returns {Promise<File>} A promise that resolves with the resized file.
  */
 function resizeImage(file, maxWidth, maxHeight) {
   return new Promise((resolve, reject) => {
@@ -59,12 +57,12 @@ export default function SignupPage({ tenant }) {
     email: '',
     web: '',
     address: '',
-    tags: '',
-    // --- NEW STATE FIELDS ---
+    // tags: '', // REMOVED: Managed manually by admin
     displayPhone: true,
     displayEmail: true,
     displayOnMap: true,
     adminNotes: '',
+    type: 'BASIC', // Default to Basic
   });
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -100,45 +98,58 @@ export default function SignupPage({ tenant }) {
     setStatus({ loading: true, error: null, success: null, message: 'Starting submission...' });
 
     try {
-      const MAX_WIDTH = 1000;
-      const MAX_HEIGHT = 800;
       const uploadedImageUrls = [];
-      const supabasePublicUrlBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ad-photos/`;
+      
+      // --- ONLY PROCESS IMAGES IF PREMIUM ---
+      if (formData.type === 'PREMIUM' && images.length > 0) {
+        const MAX_WIDTH = 1000;
+        const MAX_HEIGHT = 800;
+        const supabasePublicUrlBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ad-photos/`;
 
-      for (const image of images) {
-        setStatus(s => ({ ...s, message: `Resizing ${image.name}...` }));
-        const resizedImage = await resizeImage(image, MAX_WIDTH, MAX_HEIGHT);
+        for (const image of images) {
+            setStatus(s => ({ ...s, message: `Resizing ${image.name}...` }));
+            const resizedImage = await resizeImage(image, MAX_WIDTH, MAX_HEIGHT);
 
-        setStatus(s => ({ ...s, message: `Preparing to upload ${resizedImage.name}...` }));
-        const presignRes = await fetch('/api/prepare-upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileName: resizedImage.name,
-            tenantDomain: tenant.domain
-          }),
-        });
-        const { signedUrl, path, error: presignError } = await presignRes.json();
-        if (presignError) throw new Error(`Could not get upload URL for ${image.name}: ${presignError}`);
-        
-        setStatus(s => ({ ...s, message: `Uploading ${resizedImage.name}...` }));
-        const uploadRes = await fetch(signedUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': resizedImage.type },
-          body: resizedImage,
-        });
-        if (!uploadRes.ok) {
-          const errorBody = await uploadRes.text();
-          console.error("Upload failed with body:", errorBody);
-          throw new Error(`Failed to upload ${resizedImage.name}.`);
+            setStatus(s => ({ ...s, message: `Preparing to upload ${resizedImage.name}...` }));
+            const presignRes = await fetch('/api/prepare-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fileName: resizedImage.name,
+                tenantDomain: tenant.domain
+            }),
+            });
+            const { signedUrl, path, error: presignError } = await presignRes.json();
+            if (presignError) throw new Error(`Could not get upload URL for ${image.name}: ${presignError}`);
+            
+            setStatus(s => ({ ...s, message: `Uploading ${resizedImage.name}...` }));
+            const uploadRes = await fetch(signedUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': resizedImage.type },
+            body: resizedImage,
+            });
+            if (!uploadRes.ok) {
+            const errorBody = await uploadRes.text();
+            console.error("Upload failed with body:", errorBody);
+            throw new Error(`Failed to upload ${resizedImage.name}.`);
+            }
+            
+            const finalUrl = `${supabasePublicUrlBase}${path}`;
+            uploadedImageUrls.push(finalUrl);
         }
-        
-        const finalUrl = `${supabasePublicUrlBase}${path}`;
-        uploadedImageUrls.push(finalUrl);
       }
 
       setStatus(s => ({ ...s, message: 'Finalizing submission...' }));
-      const payload = { ...formData, imageUrls: uploadedImageUrls, captchaToken, tenantDomain: tenant.domain };
+      
+      // Construct payload (description is empty if Basic)
+      const payload = { 
+          ...formData, 
+          description: formData.type === 'PREMIUM' ? formData.description : '',
+          imageUrls: uploadedImageUrls, 
+          captchaToken, 
+          tenantDomain: tenant.domain 
+      };
+
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,39 +175,70 @@ export default function SignupPage({ tenant }) {
       <SharedHeader title={tenant.title} />
       <main className={styles.container}>
         <h1>Get Your Business Listed on {tenant.name}</h1>
-        <p>Fill out the form below to submit your business for review. Once approved, your ad will appear in our directory.</p>
-        
-        <div className={styles.pricingSection}>
-          <div className={styles.priceOptionsContainer}>
-            <div className={styles.priceOption}>
-              <span className={styles.price}>£3</span>
-              <span className={styles.period}>per month</span>
-            </div>
-            <div className={styles.priceOption}>
-              <span className={styles.price}>£30</span>
-              <span className={styles.period}>per year (save £6!)</span>
-            </div>
-          </div>
-          <p className={styles.pricingNote}>
-            After submission, we will contact you to confirm your listing and arrange payment. No payment is required today.
-          </p>
-        </div>
+        <p>Fill out the form below to submit your business for review.</p>
         
         <form onSubmit={handleSubmit} className={styles.form}>
+            
+            {/* --- PRICING / TYPE SELECTION --- */}
+            <div className={styles.pricingSection}>
+                <h2 style={{fontSize: '1.2rem', marginBottom: '15px'}}>Choose your Listing Tier</h2>
+                
+                {/* Basic Option */}
+                <div style={{marginBottom: '15px', display: 'flex', alignItems: 'flex-start', gap: '10px'}}>
+                    <input 
+                        type="radio" 
+                        id="typeBasic" 
+                        name="type" 
+                        value="BASIC" 
+                        checked={formData.type === 'BASIC'} 
+                        onChange={handleInputChange} 
+                        style={{marginTop: '5px', transform: 'scale(1.2)'}}
+                    />
+                    <label htmlFor="typeBasic" style={{cursor: 'pointer'}}>
+                        <strong>Basic Listing</strong>
+                        <p style={{fontSize: '0.9rem', margin: '5px 0 0', color: '#666'}}>
+                            Name, contact info. Full-width list entry.
+                        </p>
+                    </label>
+                </div>
+
+                {/* Premium Option */}
+                <div style={{marginBottom: '0', display: 'flex', alignItems: 'flex-start', gap: '10px'}}>
+                    <input 
+                        type="radio" 
+                        id="typePremium" 
+                        name="type" 
+                        value="PREMIUM" 
+                        checked={formData.type === 'PREMIUM'} 
+                        onChange={handleInputChange} 
+                        style={{marginTop: '5px', transform: 'scale(1.2)'}}
+                    />
+                    <label htmlFor="typePremium" style={{cursor: 'pointer'}}>
+                        <strong>Premium Listing</strong>
+                        <p style={{fontSize: '0.9rem', margin: '5px 0 0', color: '#666'}}>
+                            Includes photos, dedicated details page, map priority, description, and website link.
+                        </p>
+                    </label>
+                </div>
+            </div>
+
             <div className={styles.formSection}>
             <h2>Business Details</h2>
             <div className={styles.formGroup}>
               <label htmlFor="businessName">Business Name *</label>
               <input type="text" id="businessName" name="businessName" value={formData.businessName} onChange={handleInputChange} required />
             </div>
-            <div className={styles.formGroup}>
-              <label htmlFor="description">Description / About Us</label>
-              <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows="5"></textarea>
-            </div>
-             <div className={styles.formGroup}>
-              <label htmlFor="tags">Category / Tags (comma-separated, e.g., Plumber, Emergency, Local)</label>
-              <input type="text" id="tags" name="tags" value={formData.tags} onChange={handleInputChange} />
-            </div>
+            
+            {/* --- CONDITIONALLY RENDER DESCRIPTION (Premium Only) --- */}
+            {formData.type === 'PREMIUM' && (
+                <div className={styles.formGroup}>
+                    <label htmlFor="description">Description / About Us</label>
+                    <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows="5"></textarea>
+                </div>
+            )}
+            
+            {/* TAGS REMOVED */}
+
           </div>
           
           <div className={styles.formSection}>
@@ -219,7 +261,7 @@ export default function SignupPage({ tenant }) {
               <label htmlFor="address">Full Address</label>
               <input type="text" id="address" name="address" value={formData.address} onChange={handleInputChange} />
             </div>
-            {/* --- NEW CHECKBOXES --- */}
+
             <h3 className={styles.subheading}>Display Preferences</h3>
             <div className={styles.formGroupCheck}>
                 <input type="checkbox" id="displayPhone" name="displayPhone" checked={formData.displayPhone} onChange={handleInputChange} />
@@ -235,22 +277,24 @@ export default function SignupPage({ tenant }) {
             </div>
           </div>
 
-          <div className={styles.formSection}>
-            <h2>Images</h2>
-            <p>Upload up to 5 images for your listing. The first image will be your main cover photo.</p>
-            <div className={styles.formGroup}>
-              <input type="file" id="images" name="images" onChange={handleImageChange} multiple accept="image/png, image/jpeg, image/gif" />
+          {/* --- CONDITIONALLY RENDER IMAGES (Premium Only) --- */}
+          {formData.type === 'PREMIUM' && (
+            <div className={styles.formSection}>
+                <h2>Images</h2>
+                <p>Upload up to 5 images for your listing. The first image will be your main cover photo.</p>
+                <div className={styles.formGroup}>
+                <input type="file" id="images" name="images" onChange={handleImageChange} multiple accept="image/png, image/jpeg, image/gif" />
+                </div>
+                {imagePreviews.length > 0 && (
+                <div className={styles.imagePreviewContainer}>
+                    {imagePreviews.map((src, index) => (
+                    <img key={index} src={src} alt={`Preview ${index + 1}`} className={styles.imagePreview} />
+                    ))}
+                </div>
+                )}
             </div>
-            {imagePreviews.length > 0 && (
-              <div className={styles.imagePreviewContainer}>
-                {imagePreviews.map((src, index) => (
-                  <img key={index} src={src} alt={`Preview ${index + 1}`} className={styles.imagePreview} />
-                ))}
-              </div>
-            )}
-          </div>
+          )}
           
-          {/* --- NEW TEXTAREA --- */}
           <div className={styles.formSection}>
             <h2>Any additional comments for us?</h2>
             <p>This information is for admin review only and will <strong>not</strong> be published on your ad.</p>

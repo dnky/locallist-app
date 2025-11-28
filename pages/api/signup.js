@@ -39,6 +39,7 @@ export default async function handler(req, res) {
     const newAd = await prisma.ad.create({
       data: {
         tenantId: tenant.id,
+        type: adData.type || 'PREMIUM',
         businessName: adData.businessName,
         description: adData.description,
         phone: adData.phone,
@@ -71,6 +72,7 @@ export default async function handler(req, res) {
           <p>A new business has signed up and is ready for review.</p>
           <ul>
             <li><strong>Directory:</strong> ${tenant.name} (${tenant.domain})</li>
+            <li><strong>Listing Type:</strong> ${adData.type}</li> 
             <li><strong>Business Name:</strong> ${adData.businessName}</li>
             <li><strong>Email:</strong> ${adData.email || 'N/A'}</li>
             <li><strong>Phone:</strong> ${adData.phone || 'N/A'}</li>
