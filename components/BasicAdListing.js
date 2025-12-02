@@ -13,12 +13,21 @@ export default function BasicAdListing({ ad, onHover, onLeave }) {
     >
       <div className={styles.header}>
         <h4 className={styles.businessName}>{ad.businessName}</h4>
+        
+        {/* --- FIX START --- */}
         {tagList.length > 0 && (
-          <span className={styles.tags}>{tagList[0]}</span>
+          <div className={styles.tagsWrapper}>
+            {tagList.map((tag, index) => (
+              <span key={index} className={styles.tags}>{tag}</span>
+            ))}
+          </div>
         )}
+        {/* --- FIX END --- */}
+
       </div>
 
       <div className={styles.contactRow}>
+        {/* ... existing contact code ... */}
         {ad.phone && ad.displayPhone && (
           <a href={`tel:${ad.phone}`} className={styles.contactItem}>
             <i className="fa-solid fa-phone"></i> {ad.phone}

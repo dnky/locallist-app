@@ -30,13 +30,20 @@
   margin: 0;
 }
 
+.tagsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px; /* Adds space between tags */
+}
+
 .tags {
-  font-size: 0.8rem;
+font-size: 0.8rem;
   color: #777;
   text-transform: uppercase;
   background-color: #f0f0f0;
   padding: 2px 8px;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 /* Contact Details Row */
