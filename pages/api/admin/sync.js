@@ -2,62 +2,34 @@
 import { google } from 'googleapis';
 import prisma from '../../../lib/prisma';
 
-/**
- * 1. TRANSFORMER
- * Flattens a Prisma Ad object into a flat object suitable for a spreadsheet row.
- * This implicitly defines your column structure.
- */
-function flattenAd(ad) {
-  return {
-    id: ad.id || '',
-    tenantDomain: ad.tenant?.domain || '', // Flatten relationship
-    businessName: ad.businessName || '',
-    type: ad.type || 'BASIC',
-    slug: ad.slug || '',
-    description: ad.description || '',
-    phone: ad.phone || '',
-    email: ad.email || '',
-    web: ad.web || '',
-    address: ad.address || '',
-    lat: ad.lat || '',
-    lng: ad.lng || '',
-    tags: ad.tags || '',
-    isActive: ad.isActive, // Keep as boolean, sheet will handle it
-    displayPhone: ad.displayPhone,
-    displayEmail: ad.displayEmail,
-    displayOnMap: ad.displayOnMap,
-    grid_w: ad.grid_w || 1,
-    grid_h: ad.grid_h || 1,
-    adminNotes: ad.adminNotes || '',
-    // Convert array of objects to comma-separated string
-    imageUrls: ad.images ? ad.images.map(img => img.url).join(', ') : '' 
-  };
-}
-
-/**
- * 2. TYPE CASTER
- * Converts string values from Google Sheets back into correct DB types.
- */
+// Helper to safely cast spreadsheet strings to DB types
 function castValue(key, value) {
-  if (value === undefined || value === null) return null;
-  
-  // Handle Booleans
+  // 1. Handle Integers (grid_w, grid_h)
+  // These MUST be numbers. If empty/null/undefined, default to 1.
+  if (['grid_w', 'grid_h'].includes(key)) {
+    if (value === undefined || value === null || value === '') return 1;
+    const parsed = parseInt(value);
+    return isNaN(parsed) ? 1 : parsed;
+  }
+
+  // 2. Handle Booleans
   if (['isActive', 'displayPhone', 'displayEmail', 'displayOnMap'].includes(key)) {
+    if (value === undefined || value === null || value === '') {
+        // Defaults: isActive=false, others=true
+        return key !== 'isActive'; 
+    }
     return String(value).toUpperCase() === 'TRUE';
   }
 
-  // Handle Integers
-  if (['grid_w', 'grid_h'].includes(key)) {
-    return parseInt(value) || 1;
-  }
-
-  // Handle Floats
+  // 3. Handle Floats (lat, lng)
   if (['lat', 'lng'].includes(key)) {
+    if (value === undefined || value === null || value === '') return null;
     const num = parseFloat(value);
     return isNaN(num) ? null : num;
   }
 
-  // Handle Strings (Default)
+  // 4. Default Handle Strings
+  if (value === undefined || value === null) return '';
   return String(value);
 }
 
@@ -74,7 +46,6 @@ export default async function handler(req, res) {
   const { action } = req.body;
 
   try {
-    // Auth with Google
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -95,40 +66,44 @@ export default async function handler(req, res) {
           tenant: true,
           images: { orderBy: { createdAt: 'asc' } }
         },
-        orderBy: { createdAt: 'desc' } // Newest first
+        orderBy: { createdAt: 'desc' }
       });
 
       let rows = [];
       let headers = [];
 
       if (ads.length > 0) {
-        // 1. Convert all DB objects to Flat objects
-        const flatAds = ads.map(flattenAd);
+        const flatAds = ads.map(ad => {
+          const rowObj = {};
+          
+          rowObj['tenantDomain'] = ad.tenant?.domain || '';
+          rowObj['imageUrls'] = ad.images ? ad.images.map(img => img.url).join(', ') : '';
+
+          Object.keys(ad).forEach(key => {
+            // Exclude keys we definitely don't want in the sheet
+            if (['tenant', 'images', 'tenantId', 'createdAt', 'updatedAt'].includes(key)) return;
+            
+            const val = ad[key];
+            rowObj[key] = (val === null || val === undefined) ? '' : val;
+          });
+
+          return rowObj;
+        });
         
-        // 2. Generate Headers dynamically from the first record
         headers = Object.keys(flatAds[0]);
-        
-        // 3. Create the data rows matching the header order
         rows = flatAds.map(ad => headers.map(key => ad[key]));
-      } else {
-        // Fallback if DB is empty: Create a dummy object to generate headers
-        const dummyAd = flattenAd({});
-        headers = Object.keys(dummyAd);
-      }
+      } 
 
-      // Add Headers to the top
       const values = [headers, ...rows];
-
-      // Clear and Write
-      await sheets.spreadsheets.values.clear({ spreadsheetId, range: 'Sheet1' });
+      await sheets.spreadsheets.values.clear({ spreadsheetId, range: 'SupabaseAds' });
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: 'Sheet1!A1',
+        range: 'SupabaseAds!A1',
         valueInputOption: 'USER_ENTERED',
         requestBody: { values },
       });
 
-      return res.status(200).json({ success: true, message: `Pushed ${ads.length} ads. Headers generated: ${headers.join(', ')}` });
+      return res.status(200).json({ success: true, message: `Pushed ${ads.length} ads.` });
     }
 
     // ==========================================
@@ -137,7 +112,7 @@ export default async function handler(req, res) {
     if (action === 'pull') {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'Sheet1', // Fetch the whole sheet
+        range: 'SupabaseAds',
       });
 
       const allRows = response.data.values;
@@ -145,26 +120,23 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Sheet is empty or missing data.' });
       }
 
-      // 1. Get Headers dynamically from Row 1
-      const headers = allRows[0]; 
+      const headers = allRows[0].map(h => h.trim()); 
       const dataRows = allRows.slice(1);
 
       let updatedCount = 0;
       let createdCount = 0;
 
-      // Cache tenants
       const tenants = await prisma.tenant.findMany();
       const tenantMap = {};
       tenants.forEach(t => tenantMap[t.domain] = t.id);
 
       for (const rowValues of dataRows) {
-        // 2. Map row array to an object using the headers
         const rowData = {};
         headers.forEach((header, index) => {
-            rowData[header] = rowValues[index]; // value or undefined
+            rowData[header] = rowValues[index];
         });
 
-        // Skip invalid rows
+        // Skip rows without critical info
         if (!rowData.businessName || !rowData.tenantDomain) continue;
 
         const tenantId = tenantMap[rowData.tenantDomain];
@@ -173,58 +145,75 @@ export default async function handler(req, res) {
             continue;
         }
 
-        // 3. Prepare Images
         const imageUrlList = rowData.imageUrls 
           ? rowData.imageUrls.split(',').map(s => s.trim()).filter(s => s.length > 0)
           : [];
 
-        // 4. Build Prisma Payload dynamically
-        // We construct the object using keys from the sheet, but exclude special handling keys
-        const adPayload = {
-          tenantId: tenantId,
-          images: {
-             deleteMany: {},
-             create: imageUrlList.map(url => ({ url }))
-          },
-          // Ensure mandatory internal field has a value
-          imageSrc: imageUrlList[0] || '/placeholder.png', 
-        };
+        // 1. Build Payload
+        const basePayload = {};
 
-        // Transfer simple fields with type casting
         headers.forEach(key => {
-          // Skip fields we handled manually or don't want to sync blindly
-          if (['id', 'tenantDomain', 'imageUrls', 'tenantId', 'images', 'imageSrc'].includes(key)) return;
-          
-          adPayload[key] = castValue(key, rowData[key]);
+          // EXCLUSION LIST
+          if (['id', 'tenantDomain', 'imageUrls', 'tenantId', 'images', 'imageSrc', 'tenant', 'createdAt', 'updatedAt'].includes(key)) return;
+          basePayload[key] = castValue(key, rowData[key]);
         });
-
-        // Ensure defaults if Sheet didn't have these columns
-        if (!adPayload.type) adPayload.type = 'BASIC';
         
-        // Handle ID for Upsert
+        // 2. FORCE DEFAULTS (Crucial for preventing "Argument missing" errors)
+        basePayload.tenantId = tenantId;
+        basePayload.imageSrc = imageUrlList[0] || '/placeholder.png';
+        if (!basePayload.type) basePayload.type = 'BASIC';
+        
+        // Ensure Ints are never null (fallback to 1 if castValue somehow failed or key was missing)
+        if (basePayload.grid_w === undefined || basePayload.grid_w === null) basePayload.grid_w = 1;
+        if (basePayload.grid_h === undefined || basePayload.grid_h === null) basePayload.grid_h = 1;
+
+        // Ensure Booleans are never null
+        if (basePayload.displayPhone === undefined || basePayload.displayPhone === null) basePayload.displayPhone = true;
+        if (basePayload.displayEmail === undefined || basePayload.displayEmail === null) basePayload.displayEmail = true;
+        if (basePayload.displayOnMap === undefined || basePayload.displayOnMap === null) basePayload.displayOnMap = true;
+        if (basePayload.isActive === undefined || basePayload.isActive === null) basePayload.isActive = false;
+
+        // 3. SANITIZATION: Strictly remove bad keys
+        delete basePayload.tenant; 
+        delete basePayload.images;
+
+        // 4. Determine ID
         const adId = rowData.id && rowData.id.length > 10 ? rowData.id : null;
 
         if (adId) {
           await prisma.ad.update({
             where: { id: adId },
-            data: adPayload
+            data: {
+              ...basePayload,
+              images: {
+                deleteMany: {},
+                create: imageUrlList.map(url => ({ url }))
+              }
+            }
           });
           updatedCount++;
         } else {
-          // Generate Slug if missing
-          if (!adPayload.slug) {
-             adPayload.slug = (rowData.businessName || 'biz')
+          if (!basePayload.slug) {
+             basePayload.slug = (rowData.businessName || 'biz')
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(Math.random() * 10000);
           }
-          await prisma.ad.create({ data: adPayload });
+
+          await prisma.ad.create({ 
+            data: {
+              ...basePayload,
+              images: {
+                create: imageUrlList.map(url => ({ url }))
+              }
+            } 
+          });
           createdCount++;
         }
       }
 
       return res.status(200).json({ 
         success: true, 
-        message: `Sync complete using headers: [${headers.join(', ')}]. Created: ${createdCount}, Updated: ${updatedCount}` 
+        message: `Sync complete. Created: ${createdCount}, Updated: ${updatedCount}` 
       });
     }
 

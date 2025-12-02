@@ -1,15 +1,13 @@
-TenantAdList.js
 // components/TenantAdList.js
 
 import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
+// import Link from 'next/link'; // REMOVED
 import styles from '../styles/TenantDirectory.module.css';
 import SharedHeader from './SharedHeader';
 import SharedFooter from './SharedFooter';
-// --- IMPORT NEW COMPONENT ---
 import BasicAdListing from './BasicAdListing';
 
 const DynamicMap = dynamic(() => import('./DynamicMap'), {
@@ -17,7 +15,6 @@ const DynamicMap = dynamic(() => import('./DynamicMap'), {
 });
 
 export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ads }) {
-  // ... (keep existing state and hooks: router, viewMode, hoveredAdId, searchQuery, etc.) ...
   const router = useRouter();
   const [viewMode, setViewMode] = useState('list');
   const [hoveredAdId, setHoveredAdId] = useState(null);
@@ -26,7 +23,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   const isNavigating = useRef(false);
   const filteredAdIds = new Set(filteredAds.map(ad => ad.id));
 
-  // ... (keep handleListingClick, useEffects for router and search logic) ...
   const handleListingClick = (e, adId) => {
       let target = e.target;
       while (target && target !== e.currentTarget) {
@@ -35,7 +31,8 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         }
         target = target.parentElement;
       }
-      router.push(`/details?id=${adId}`);
+      // Use window.location to be safe, or just router.push assuming we fix the query issue
+      router.push(`/${ads.find(a => a.id === adId)?.slug}`);
     };
   
     useEffect(() => {
@@ -55,23 +52,33 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       };
     }, [router.events]);
   
+    // --- FIXED USE EFFECT ---
     useEffect(() => {
     const handler = setTimeout(() => {
       if (isNavigating.current) return;
+      
+      // Copy current query params
       const newQuery = { ...router.query };
-      delete newQuery.domain; 
-      delete newQuery.slug;
+      
+      // ERROR FIX: DO NOT DELETE 'domain' or 'slug'
+      // These are required by Next.js to render the current dynamic route.
+      // delete newQuery.domain; 
+      // delete newQuery.slug;
 
       if (searchQuery) {
         newQuery.q = searchQuery;
       } else {
         delete newQuery.q;
       }
-      router.replace(
-        { pathname: router.pathname, query: newQuery }, 
-        undefined, 
-        { shallow: true }
-      );
+
+      // Check if query actually changed to avoid redundant replaces
+      if (router.query.q !== newQuery.q) {
+        router.replace(
+          { pathname: router.pathname, query: newQuery }, 
+          undefined, 
+          { shallow: true }
+        );
+      }
     }, 300);
     return () => clearTimeout(handler);
   }, [searchQuery, router]);
@@ -102,7 +109,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
 
   return (
     <div className={styles.tenantPage}>
-      {/* ... (Keep Head and SharedHeader exactly as they are) ... */}
       <Head>
         <title>{tenantTitle}</title>
       </Head>
@@ -144,7 +150,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
             )}
             <div className={styles.businessListings}>
               {filteredAds.map(ad => {
-                // --- CHECK FOR BASIC TYPE ---
                 if (ad.type === 'BASIC') {
                   return (
                     <BasicAdListing 
@@ -156,7 +161,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                   );
                 }
 
-                // --- EXISTING PREMIUM RENDER LOGIC ---
                 return (
                   <div
                     key={ad.id}
@@ -165,22 +169,23 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                     onMouseLeave={() => setHoveredAdId(null)}
                     onClick={(e) => handleListingClick(e, ad.id)}
                   >
-                   {/* ... (Keep existing Premium JSX content: Image, Content, etc.) ... */}
                     <div className={styles.listingImage}>
-                        <Link href={`/${ad.slug}`}>
+                        {/* Use <a> for robustness */}
+                        <a href={`/${ad.slug}`}>
                         {(ad.firstImageUrl || ad.logoSrc) && (
                             <img
                             src={ad.firstImageUrl || `/${tenantDomain}/${ad.logoSrc}`}
                             alt={`Image for ${ad.businessName}`}
                             />
                         )}
-                        </Link>
+                        </a>
                     </div>
                     <div className={styles.listingContent}>
                         <h4>
-                        <Link href={`/${ad.slug}`} className={styles.listingTitleLink}>
+                        {/* Use <a> for robustness */}
+                        <a href={`/${ad.slug}`} className={styles.listingTitleLink}>
                             {ad.businessName}
-                        </Link>
+                        </a>
                         </h4>
                         {ad.tags && (
                         <div className={styles.listingCategory}>

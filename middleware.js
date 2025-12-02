@@ -9,6 +9,7 @@ export function middleware(req) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
+    pathname.startsWith('/admin') ||
     /\.(.*)$/.test(pathname)
   ) {
     return NextResponse.next();

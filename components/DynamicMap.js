@@ -126,9 +126,9 @@ export default function DynamicMap({
               {/* Conditional Rendering based on Listing Type */}
               {ad.type !== 'BASIC' ? (
                 /* Premium Listings get a link to details */
-                <Link href={`/${ad.slug}`}>
-                View Details
-              </Link>
+                <a href={`/${ad.slug}`}>
+                  View Details
+                </a>
               ) : (
                 /* Basic Listings get contact info directly (no link) */
                 <div style={{ fontSize: '0.85rem', marginTop: '4px', lineHeight: '1.4' }}>
