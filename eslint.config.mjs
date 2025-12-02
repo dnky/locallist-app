@@ -19,6 +19,7 @@ const eslintConfig = [
       // "off" disables the rule, preventing the build error.
       // You could also set it to "warn" to see it during development without failing the build.
       "react/no-unescaped-entities": "off",
+      "@next/next/no-img-element": "off",
     },
   },
   // -------------------------

@@ -26,14 +26,15 @@ export default function AdDetailPage({ ad, tenant }) {
     setIsLightboxOpen(true);
   };
   const closeLightbox = () => setIsLightboxOpen(false);
-  const showNextImage = (e) => {
-    e.stopPropagation();
+  const showNextImage = useCallback((e) => {
+    e?.stopPropagation(); // Optional chaining just in case
     setCurrentImageIndex((prev) => (prev + 1) % ad.images.length);
-  };
-  const showPrevImage = (e) => {
-    e.stopPropagation();
+  }, [ad]); // Depend on 'ad' (or ad.images)
+
+  const showPrevImage = useCallback((e) => {
+    e?.stopPropagation();
     setCurrentImageIndex((prev) => (prev - 1 + ad.images.length) % ad.images.length);
-  };
+  }, [ad]);
   const handlePrevClick = () => setVisibleStartIndex((prev) => Math.max(0, prev - 1));
   const handleNextClick = () => setVisibleStartIndex((prev) => Math.min(ad.images.length - 2, prev + 1));
 

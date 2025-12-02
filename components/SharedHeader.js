@@ -9,6 +9,7 @@ export default function SharedHeader({ title, subheading, children, isSticky }) 
       <div className={styles.container}>
         <div className={styles.headerContent}>
           <div className={styles.titleContainer}>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/" className={styles.tenantLogo}>{title}</a>
             {subheading && <p className={styles.headerSubheading}>{subheading}</p>}
           </div>
