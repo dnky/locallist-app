@@ -5,7 +5,6 @@ import prisma from '../../../lib/prisma';
 // Helper to safely cast spreadsheet strings to DB types
 function castValue(key, value) {
   // 1. Handle Integers (grid_w, grid_h)
-  // These MUST be numbers. If empty/null/undefined, default to 1.
   if (['grid_w', 'grid_h'].includes(key)) {
     if (value === undefined || value === null || value === '') return 1;
     const parsed = parseInt(value);
@@ -33,6 +32,17 @@ function castValue(key, value) {
   return String(value);
 }
 
+// Helper: Convert 0-based column index to A1 notation letter (e.g., 0 -> A, 26 -> AA)
+function getColumnLetter(colIndex) {
+  let temp, letter = '';
+  while (colIndex >= 0) {
+    temp = (colIndex) % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    colIndex = Math.floor((colIndex) / 26) - 1;
+  }
+  return letter;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -56,6 +66,7 @@ export default async function handler(req, res) {
 
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+    const SHEET_NAME = 'SupabaseAds'; // Centralized sheet name var
 
     // ==========================================
     // ACTION: PUSH (DB -> SHEET)
@@ -95,10 +106,10 @@ export default async function handler(req, res) {
       } 
 
       const values = [headers, ...rows];
-      await sheets.spreadsheets.values.clear({ spreadsheetId, range: 'SupabaseAds' });
+      await sheets.spreadsheets.values.clear({ spreadsheetId, range: SHEET_NAME });
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: 'SupabaseAds!A1',
+        range: `${SHEET_NAME}!A1`,
         valueInputOption: 'USER_ENTERED',
         requestBody: { values },
       });
@@ -112,7 +123,7 @@ export default async function handler(req, res) {
     if (action === 'pull') {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'SupabaseAds',
+        range: SHEET_NAME,
       });
 
       const allRows = response.data.values;
@@ -122,15 +133,23 @@ export default async function handler(req, res) {
 
       const headers = allRows[0].map(h => h.trim()); 
       const dataRows = allRows.slice(1);
+      
+      // Find where the ID column is so we can write back to it
+      const idColIndex = headers.indexOf('id');
+      const idColLetter = idColIndex !== -1 ? getColumnLetter(idColIndex) : null;
 
       let updatedCount = 0;
       let createdCount = 0;
+      const sheetUpdates = []; // To store ID updates for batch writing
 
       const tenants = await prisma.tenant.findMany();
       const tenantMap = {};
       tenants.forEach(t => tenantMap[t.domain] = t.id);
 
-      for (const rowValues of dataRows) {
+      // Iterate using index so we know which Excel row we are on
+      for (let i = 0; i < dataRows.length; i++) {
+        const rowValues = dataRows[i];
+        
         const rowData = {};
         headers.forEach((header, index) => {
             rowData[header] = rowValues[index];
@@ -158,22 +177,19 @@ export default async function handler(req, res) {
           basePayload[key] = castValue(key, rowData[key]);
         });
         
-        // 2. FORCE DEFAULTS (Crucial for preventing "Argument missing" errors)
+        // 2. FORCE DEFAULTS
         basePayload.tenantId = tenantId;
         basePayload.imageSrc = imageUrlList[0] || '/placeholder.png';
         if (!basePayload.type) basePayload.type = 'BASIC';
         
-        // Ensure Ints are never null (fallback to 1 if castValue somehow failed or key was missing)
         if (basePayload.grid_w === undefined || basePayload.grid_w === null) basePayload.grid_w = 1;
         if (basePayload.grid_h === undefined || basePayload.grid_h === null) basePayload.grid_h = 1;
 
-        // Ensure Booleans are never null
         if (basePayload.displayPhone === undefined || basePayload.displayPhone === null) basePayload.displayPhone = true;
         if (basePayload.displayEmail === undefined || basePayload.displayEmail === null) basePayload.displayEmail = true;
         if (basePayload.displayOnMap === undefined || basePayload.displayOnMap === null) basePayload.displayOnMap = true;
         if (basePayload.isActive === undefined || basePayload.isActive === null) basePayload.isActive = false;
 
-        // 3. SANITIZATION: Strictly remove bad keys
         delete basePayload.tenant; 
         delete basePayload.images;
 
@@ -181,6 +197,7 @@ export default async function handler(req, res) {
         const adId = rowData.id && rowData.id.length > 10 ? rowData.id : null;
 
         if (adId) {
+          // --- UPDATE EXISTING ---
           await prisma.ad.update({
             where: { id: adId },
             data: {
@@ -193,13 +210,14 @@ export default async function handler(req, res) {
           });
           updatedCount++;
         } else {
+          // --- CREATE NEW ---
           if (!basePayload.slug) {
              basePayload.slug = (rowData.businessName || 'biz')
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(Math.random() * 10000);
           }
 
-          await prisma.ad.create({ 
+          const newAd = await prisma.ad.create({ 
             data: {
               ...basePayload,
               images: {
@@ -208,12 +226,33 @@ export default async function handler(req, res) {
             } 
           });
           createdCount++;
+
+          // Prepare to write the new ID back to the sheet
+          if (idColLetter) {
+            // Row index in sheet: Header (1) + Previous Data (i) + 1 (1-based index) -> i + 2
+            const sheetRowNumber = i + 2; 
+            sheetUpdates.push({
+              range: `${SHEET_NAME}!${idColLetter}${sheetRowNumber}`,
+              values: [[newAd.id]]
+            });
+          }
         }
+      }
+
+      // 5. Batch Update Google Sheet with new IDs
+      if (sheetUpdates.length > 0) {
+        await sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId,
+          resource: {
+            valueInputOption: 'USER_ENTERED',
+            data: sheetUpdates
+          }
+        });
       }
 
       return res.status(200).json({ 
         success: true, 
-        message: `Sync complete. Created: ${createdCount}, Updated: ${updatedCount}` 
+        message: `Sync complete. Created: ${createdCount} (IDs updated), Updated: ${updatedCount}` 
       });
     }
 
