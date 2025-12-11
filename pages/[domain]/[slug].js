@@ -8,7 +8,7 @@ import styles from '../../styles/DetailsPage.module.css';
 import SharedHeader from '../../components/SharedHeader'; 
 import SharedFooter from '../../components/SharedFooter'; 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
   ssr: false
@@ -117,7 +117,7 @@ export default function AdDetailPage({ ad, tenant }) {
             {((ad.phone && ad.displayPhone) || (ad.email && ad.displayEmail) || ad.web) && (
               <div className={styles.detailContactInfo}>
                 {ad.phone && ad.displayPhone && <div className={styles.contactRow}><i className="fa-solid fa-phone"></i><a href={`tel:${ad.phone}`}>{ad.phone}</a></div>}
-                {ad.email && ad.displayEmail && <div className={styles.contactRow}><i className="fa-solid fa-envelope"></i><a href={`mailto:${ad.email}`}>{ad.email}</a></div>}
+                {ad.email && ad.displayEmail && <div className={styles.contactRow}><i className="fa-solid fa-envelope"></i><a href={`mailto:${ad.email}`}>Email</a></div>}
                 {ad.web && <div className={styles.contactRow}><i className="fa-solid fa-globe"></i><a href={ad.web} target="_blank" rel="noopener noreferrer">{ad.web}</a></div>}
               </div>
             )}

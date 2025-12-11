@@ -197,15 +197,15 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                         
                         <div className={styles.listingContactDesktop}>
                         {ad.phone && ad.displayPhone && <a href={`tel:${ad.phone}`}><i className="fa-solid fa-phone"></i> {ad.phone}</a>}
-                        {ad.email && ad.displayEmail && <a href={`mailto:${ad.email}`}><i className="fa-solid fa-envelope"></i> {ad.email}</a>}
+                        {ad.email && ad.displayEmail && <a href={`mailto:${ad.email}`}><i className="fa-solid fa-envelope"></i> Email</a>}
                         {ad.web && <a href={ad.web} target="_blank" rel="noopener noreferrer"><i className="fa-solid fa-globe"></i> Website</a>}
                         </div>
                         {ad.address && <p className={styles.listingAddress}>{ad.address}</p>}
                         {ad.description && <p className={styles.listingDescription}>{ad.description}</p>}
                         
                         <div className={styles.listingContactMobile}>
-                        {ad.phone && ad.displayPhone && <div className={styles.contactItem}><i className="fa-solid fa-phone"></i> {ad.phone}</div>}
-                        {ad.email && ad.displayEmail && <div className={styles.contactItem}><i className="fa-solid fa-envelope"></i> {ad.email}</div>}
+                        {ad.phone && ad.displayPhone && <a href={`tel:${ad.phone}`} className={styles.contactItem}><i className="fa-solid fa-phone"></i> {ad.phone}</a>}
+                        {ad.email && ad.displayEmail && <a href={`mailto:${ad.email}`} className={styles.contactItem}><i className="fa-solid fa-envelope"></i> Email</a>}
                         </div>
                     </div>
                   </div>

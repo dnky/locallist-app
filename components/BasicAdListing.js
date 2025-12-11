@@ -14,7 +14,6 @@ export default function BasicAdListing({ ad, onHover, onLeave }) {
       <div className={styles.header}>
         <h4 className={styles.businessName}>{ad.businessName}</h4>
         
-        {/* --- FIX START --- */}
         {tagList.length > 0 && (
           <div className={styles.tagsWrapper}>
             {tagList.map((tag, index) => (
@@ -22,7 +21,6 @@ export default function BasicAdListing({ ad, onHover, onLeave }) {
             ))}
           </div>
         )}
-        {/* --- FIX END --- */}
 
       </div>
 
@@ -36,7 +34,7 @@ export default function BasicAdListing({ ad, onHover, onLeave }) {
         
         {ad.email && ad.displayEmail && (
           <a href={`mailto:${ad.email}`} className={styles.contactItem}>
-            <i className="fa-solid fa-envelope"></i> {ad.email}
+            <i className="fa-solid fa-envelope"></i> Email
           </a>
         )}
 

@@ -35,7 +35,7 @@ export default function TenantAdGrid({ ads, tenantName, tenantDomain }) {
             <h2>{modalData.businessName}</h2>
             <div className="modal-contact-info">
               {modalData.phone && <a href={`tel:${modalData.phone}`}>Call: {modalData.phone}</a>}
-              {modalData.email && <a href={`mailto:${modalData.email}`}>Email: {modalData.email}</a>}
+              {modalData.email && <a href={`mailto:${modalData.email}`}>Email</a>}
               {modalData.web && <a href={modalData.web} target="_blank" rel="noopener noreferrer">Visit Website</a>}
             </div>
           </div>
