@@ -1,7 +1,7 @@
 // components/BasicAdListing.js
 import styles from '../styles/BasicAdListing.module.css';
 
-export default function BasicAdListing({ ad, onHover, onLeave }) {
+export default function BasicAdListing({ ad, onHover, onLeave, onTagClick }) {
   // Parse tags if they exist
   const tagList = ad.tags ? ad.tags.split(',').map(t => t.trim()) : [];
 
@@ -17,7 +17,16 @@ export default function BasicAdListing({ ad, onHover, onLeave }) {
         {tagList.length > 0 && (
           <div className={styles.tagsWrapper}>
             {tagList.map((tag, index) => (
-              <span key={index} className={styles.tags}>{tag}</span>
+              <button 
+                key={index} 
+                className={styles.tags}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent bubbling
+                  onTagClick(tag);
+                }}
+              >
+                {tag}
+              </button>
             ))}
           </div>
         )}

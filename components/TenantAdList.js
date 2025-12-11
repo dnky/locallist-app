@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-// import Link from 'next/link'; // REMOVED
 import styles from '../styles/TenantDirectory.module.css';
 import SharedHeader from './SharedHeader';
 import SharedFooter from './SharedFooter';
@@ -18,21 +17,37 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
   const router = useRouter();
   const [viewMode, setViewMode] = useState('list');
   const [hoveredAdId, setHoveredAdId] = useState(null);
+  
+  // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
   const [filteredAds, setFilteredAds] = useState(ads);
+  
   const isNavigating = useRef(false);
   const filteredAdIds = new Set(filteredAds.map(ad => ad.id));
+
+  // Determine if any filter is active
+  const isFiltering = searchQuery.length > 0 || selectedTags.length > 0;
 
   const handleListingClick = (e, adId) => {
       let target = e.target;
       while (target && target !== e.currentTarget) {
-        if (target.tagName === 'A') {
+        if (target.tagName === 'A' || target.tagName === 'BUTTON') {
           return;
         }
         target = target.parentElement;
       }
-      // Use window.location to be safe, or just router.push assuming we fix the query issue
       router.push(`/${ads.find(a => a.id === adId)?.slug}`);
+    };
+
+    const handleTagClick = (tag) => {
+      if (!selectedTags.includes(tag)) {
+        setSelectedTags(prev => [...prev, tag]);
+      }
+    };
+
+    const removeTag = (tagToRemove) => {
+      setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
     };
   
     useEffect(() => {
@@ -52,54 +67,58 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
       };
     }, [router.events]);
   
-    // --- FIXED USE EFFECT ---
     useEffect(() => {
-    const handler = setTimeout(() => {
-      if (isNavigating.current) return;
-      
-      // Copy current query params
-      const newQuery = { ...router.query };
-      
-      // ERROR FIX: DO NOT DELETE 'domain' or 'slug'
-      // These are required by Next.js to render the current dynamic route.
-      // delete newQuery.domain; 
-      // delete newQuery.slug;
-
-      if (searchQuery) {
-        newQuery.q = searchQuery;
-      } else {
-        delete newQuery.q;
-      }
-
-      // Check if query actually changed to avoid redundant replaces
-      if (router.query.q !== newQuery.q) {
-        router.replace(
-          { pathname: router.pathname, query: newQuery }, 
-          undefined, 
-          { shallow: true }
-        );
-      }
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [searchQuery, router]);
+      const handler = setTimeout(() => {
+        if (isNavigating.current) return;
+        const newQuery = { ...router.query };
+        if (searchQuery) {
+          newQuery.q = searchQuery;
+        } else {
+          delete newQuery.q;
+        }
+        if (router.query.q !== newQuery.q) {
+          router.replace(
+            { pathname: router.pathname, query: newQuery }, 
+            undefined, 
+            { shallow: true }
+          );
+        }
+      }, 300);
+      return () => clearTimeout(handler);
+    }, [searchQuery, router]);
   
     useEffect(() => {
       const lowercasedQuery = searchQuery.toLowerCase();
-      if (!lowercasedQuery) {
-        setFilteredAds(ads);
-      } else {
-        const results = ads.filter(ad => {
+      
+      const results = ads.filter(ad => {
+        // 1. Text Search Logic
+        let matchesSearch = true;
+        if (lowercasedQuery) {
           const nameMatch = ad.businessName?.toLowerCase().includes(lowercasedQuery);
           const tagsMatch = ad.tags?.toLowerCase().includes(lowercasedQuery);
           const descMatch = ad.description?.toLowerCase().includes(lowercasedQuery);
           const phoneMatch = ad.phone?.toLowerCase().includes(lowercasedQuery);
           const emailMatch = ad.email?.toLowerCase().includes(lowercasedQuery);
           const webMatch = ad.web?.toLowerCase().includes(lowercasedQuery);
-          return nameMatch || tagsMatch || descMatch || phoneMatch || emailMatch || webMatch;
-        });
-        setFilteredAds(results);
-      }
-    }, [searchQuery, ads]);
+          matchesSearch = nameMatch || tagsMatch || descMatch || phoneMatch || emailMatch || webMatch;
+        }
+
+        // 2. Tag Filtering Logic (AND)
+        let matchesTags = true;
+        if (selectedTags.length > 0) {
+          if (!ad.tags) {
+            matchesTags = false;
+          } else {
+            const adTags = ad.tags.split(',').map(t => t.trim().toLowerCase());
+            matchesTags = selectedTags.every(selTag => adTags.includes(selTag.toLowerCase()));
+          }
+        }
+
+        return matchesSearch && matchesTags;
+      });
+
+      setFilteredAds(results);
+    }, [searchQuery, selectedTags, ads]);
   
     const listingsContainerClasses = [
       styles.listingsContainer,
@@ -118,36 +137,60 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
         subheading="Your trusted local business directory"
         isSticky={true} 
       >
-        <div className={styles.searchWrapper}>
-          <button
-            className={styles.btnMapMobile}
-            onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-            title="Toggle map view"
-          >
-            <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
-          </button>
-          <div className={styles.searchBar}>
-            <input
-              type="text"
-              placeholder="Search businesses..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button type="button">
-              <i className="fa-solid fa-search"></i>
+        <div className={styles.headerControls}>
+          <div className={styles.searchWrapper}>
+            <button
+              className={styles.btnMapMobile}
+              onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+              title="Toggle map view"
+            >
+              <i className={`fa-solid ${viewMode === 'map' ? 'fa-list' : 'fa-map-location-dot'}`}></i>
             </button>
+            <div className={styles.searchBar}>
+              <input
+                type="text"
+                placeholder="Search businesses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="button">
+                <i className="fa-solid fa-search"></i>
+              </button>
+            </div>
           </div>
+
+          {selectedTags.length > 0 && (
+            <div className={styles.activeTagsWrapper}>
+              {selectedTags.map(tag => (
+                <button 
+                  key={tag} 
+                  className={styles.activeTag} 
+                  onClick={() => removeTag(tag)}
+                  title="Remove filter"
+                >
+                  {tag} <i className="fa-solid fa-xmark"></i>
+                </button>
+              ))}
+              <button 
+                className={styles.clearAllTags} 
+                onClick={() => setSelectedTags([])}
+              >
+                Clear all
+              </button>
+            </div>
+          )}
         </div>
       </SharedHeader>
 
       <div id="page-content-full-width" className={styles.pageContent}>
         <div className={listingsContainerClasses}>
           <div className={styles.listingsPanel}>
-            {searchQuery.length > 0 && (
+            {isFiltering && (
               <div className={styles.resultsCounter}>
                 Showing {filteredAds.length} of {ads.length} businesses
               </div>
             )}
+            
             <div className={styles.businessListings}>
               {filteredAds.map(ad => {
                 if (ad.type === 'BASIC') {
@@ -157,6 +200,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                       ad={ad}
                       onHover={() => setHoveredAdId(ad.id)}
                       onLeave={() => setHoveredAdId(null)}
+                      onTagClick={handleTagClick}
                     />
                   );
                 }
@@ -170,7 +214,6 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                     onClick={(e) => handleListingClick(e, ad.id)}
                   >
                     <div className={styles.listingImage}>
-                        {/* Use <a> for robustness */}
                         <a href={`/${ad.slug}`}>
                         {(ad.firstImageUrl || ad.logoSrc) && (
                             <img
@@ -182,15 +225,24 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
                     </div>
                     <div className={styles.listingContent}>
                         <h4>
-                        {/* Use <a> for robustness */}
                         <a href={`/${ad.slug}`} className={styles.listingTitleLink}>
                             {ad.businessName}
                         </a>
                         </h4>
+                        
                         {ad.tags && (
                         <div className={styles.listingCategory}>
                             {ad.tags.split(',').map(tag => (
-                            <span key={tag.trim()}>{tag.trim()}</span>
+                            <button 
+                              key={tag.trim()} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTagClick(tag.trim());
+                              }}
+                              className={styles.tagButton}
+                            >
+                              {tag.trim()}
+                            </button>
                             ))}
                         </div>
                         )}
@@ -219,6 +271,7 @@ export default function TenantAdList({ tenantName, tenantTitle, tenantDomain, ad
               ads={ads.filter(ad => ad.displayOnMap)}
               filteredAdIds={filteredAdIds}
               searchQuery={searchQuery}
+              isFiltering={isFiltering}
               hoveredAdId={hoveredAdId}
               viewMode={viewMode}
             />

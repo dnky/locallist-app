@@ -49,14 +49,23 @@
 
 .headerContent {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed to accommodate stacked controls */
   justify-content: space-between;
   gap: 2rem;
+}
+
+.headerControls {
+  flex-grow: 1;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .titleContainer {
   display: flex;
   flex-direction: column;
+  padding-top: 5px; /* Align visual center with search bar */
 }
 
 .tenantLogo {
@@ -77,8 +86,51 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-grow: 1;
-  max-width: 600px;
+  width: 100%;
+}
+
+/* --- NEW: Active Tags Styles --- */
+.activeTagsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.activeTag {
+  background-color: var(--tenant-primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.activeTag:hover {
+  background-color: #b01b1b;
+}
+
+.activeTag i {
+  font-size: 0.75rem;
+}
+
+.clearAllTags {
+  background: none;
+  border: none;
+  color: #777;
+  text-decoration: underline;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0 5px;
+}
+.clearAllTags:hover {
+  color: var(--tenant-primary-color);
 }
 
 .btnMapMobile {
@@ -229,10 +281,23 @@
   text-transform: uppercase;
   font-weight: 500;
 }
-.listingCategory span {
+
+/* --- UPDATED TAG BUTTONS --- */
+.tagButton {
   background-color: #eee;
   padding: 2px 8px;
   border-radius: 4px;
+  border: none;
+  color: #555;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tagButton:hover {
+  background-color: var(--tenant-primary-color);
+  color: #fff;
 }
 
 .businessListing p {
@@ -314,9 +379,9 @@
     gap: 0.5rem;
   }
   
-  .searchWrapper {
+  .headerControls {
     max-width: none;
-    margin-bottom:6px;
+    margin-bottom: 6px;
   }
   
   .listingContactDesktop,
@@ -388,10 +453,13 @@
     display: none;
   }
 
+  /* --- FIX: UPDATED MOBILE CONTACT STYLE --- */
   .listingContactMobile {
     display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
+    flex-direction: row; /* Allow horizontal layout */
+    flex-wrap: wrap;     /* Allow wrapping */
+    gap: 12px;           /* Horizontal spacing */
+    margin-top: 4px;
   }
 
   .contactItem {
@@ -400,6 +468,7 @@
     font-size: 0.85rem;
     color: var(--tenant-text-color);
     text-decoration: none;
+    white-space: nowrap; /* Prevent icon/text break within single item */
   }
 
   .listingContactMobile i {

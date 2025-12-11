@@ -14,31 +14,31 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-function MapEffect({ ads, filteredAdIds, searchQuery, viewMode }) {
+function MapEffect({ ads, filteredAdIds, isFiltering, viewMode }) {
   const map = useMap();
 
   useEffect(() => {
-    // Only fit bounds if there's more than one ad, otherwise the zoom is too tight.
-    const adsToFit = searchQuery.length > 0 ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
+    // Zoom to filtered markers if filtering is active, otherwise fit all markers
+    const adsToFit = isFiltering ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
     
     if (adsToFit && adsToFit.length > 1) {
       const bounds = L.latLngBounds(adsToFit.map(ad => [ad.lat, ad.lng]));
       map.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [ads, filteredAdIds, searchQuery, map]);
+  }, [ads, filteredAdIds, isFiltering, map]);
 
   useEffect(() => {
     if (viewMode === 'map') {
       setTimeout(() => {
         map.invalidateSize();
-        const adsToFit = searchQuery.length > 0 ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
+        const adsToFit = isFiltering ? ads.filter(ad => filteredAdIds.has(ad.id)) : ads;
         if (adsToFit && adsToFit.length > 1) {
           const bounds = L.latLngBounds(adsToFit.map(ad => [ad.lat, ad.lng]));
           map.fitBounds(bounds, { padding: [50, 50] });
         }
       }, 100);
     }
-  }, [viewMode, map, ads, filteredAdIds, searchQuery]);
+  }, [viewMode, map, ads, filteredAdIds, isFiltering]);
 
   return null;
 }
@@ -47,6 +47,7 @@ export default function DynamicMap({
   ads,
   filteredAdIds = new Set(),
   searchQuery = '',
+  isFiltering = false,
   hoveredAdId = null,
   viewMode = 'map',
   initialZoom = 13,
@@ -60,7 +61,7 @@ export default function DynamicMap({
     ? [adsWithCoords[0].lat, adsWithCoords[0].lng] 
     : [51.505, -0.09];
     
-  const isSearching = searchQuery.length > 0;
+  // We now rely on passed prop isFiltering instead of recalculating based on searchQuery
 
   useEffect(() => {
     adsWithCoords.forEach(ad => {
@@ -72,11 +73,11 @@ export default function DynamicMap({
       if (ad.id === hoveredAdId) {
         marker._icon.classList.add('marker-highlighted');
       }
-      else if (isSearching && !filteredAdIds.has(ad.id)) {
+      else if (isFiltering && !filteredAdIds.has(ad.id)) {
         marker._icon.classList.add('marker-unmatched');
       }
     });
-  }, [isSearching, filteredAdIds, hoveredAdId, adsWithCoords]);
+  }, [isFiltering, filteredAdIds, hoveredAdId, adsWithCoords]);
 
   useEffect(() => {
     Object.values(markerRefs.current).forEach(marker => {
@@ -101,7 +102,8 @@ export default function DynamicMap({
       
       {adsWithCoords.map(ad => {
         const isMatched = filteredAdIds.has(ad.id);
-        const eventHandlers = (isSearching && !isMatched) ? {} : {
+        // Only allow interactions if matched OR if we are not filtering
+        const eventHandlers = (isFiltering && !isMatched) ? {} : {
           mouseover: (event) => {
             event.target.setZIndexOffset(1000);
             event.target.openPopup();
@@ -123,14 +125,11 @@ export default function DynamicMap({
               <strong>{ad.businessName}</strong>
               <br />
               
-              {/* Conditional Rendering based on Listing Type */}
               {ad.type !== 'BASIC' ? (
-                /* Premium Listings get a link to details */
                 <a href={`/${ad.slug}`}>
                   View Details
                 </a>
               ) : (
-                /* Basic Listings get contact info directly (no link) */
                 <div style={{ fontSize: '0.85rem', marginTop: '4px', lineHeight: '1.4' }}>
                     {ad.phone && <div><i className="fa-solid fa-phone" style={{fontSize: '0.8em', marginRight: '5px'}}></i>{ad.phone}</div>}
                     {ad.web && <div><a href={ad.web} target="_blank" rel="noopener noreferrer">Website</a></div>}
@@ -142,7 +141,7 @@ export default function DynamicMap({
         );
       })}
 
-      <MapEffect ads={adsWithCoords} filteredAdIds={filteredAdIds} searchQuery={searchQuery} viewMode={viewMode} />
+      <MapEffect ads={adsWithCoords} filteredAdIds={filteredAdIds} isFiltering={isFiltering} viewMode={viewMode} />
     </MapContainer>
   );
 }

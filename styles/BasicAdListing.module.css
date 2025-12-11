@@ -36,14 +36,23 @@
   gap: 5px; /* Adds space between tags */
 }
 
+/* --- UPDATED: Tag Styles to be Button-like --- */
 .tags {
-font-size: 0.8rem;
+  font-size: 0.8rem;
   color: #777;
   text-transform: uppercase;
   background-color: #f0f0f0;
   padding: 2px 8px;
   border-radius: 4px;
   white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tags:hover {
+  background-color: #d32323;
+  color: #fff;
 }
 
 /* Contact Details Row */
@@ -91,9 +100,9 @@ font-size: 0.8rem;
     gap: 5px;
   }
   
+  /* --- FIX: Allow Wrapping Row on Mobile --- */
   .contactRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    gap: 10px;
+    /* Removed flex-direction: column to inherit row + wrap from .contactRow base */
   }
 }
